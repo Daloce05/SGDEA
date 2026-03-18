@@ -1,0 +1,300 @@
+================================================================================
+SCRIPT DE INICIALIZACIÓN - BASE DE DATOS PostgreSQL
+SGDEA - Sistema de Gestión Documental Empresarial Avanzado (Módulo TRD)
+================================================================================
+
+INFORMACIÓN GENERAL:
+- Sistema: PostgreSQL 12+
+- Base de Datos: sgdea_trd
+- Codificación: UTF-8
+- Jerarquía: OFICINA → SERIE → SUBSERIE → TIPO DOCUMENTAL → ARCHIVO
+
+================================================================================
+INSTRUCCIONES DE EJECUCIÓN:
+================================================================================
+
+OPCIÓN 1: Usando Node.js (Recomendado - Windows/Linux/Mac):
+  cd C:\Users\david\Desktop\SGDEA
+  node init_database.js
+
+OPCIÓN 2: Usando psql (Linux/Mac):
+  psql -U postgres -d sgdea_trd -f base_datos/trd/schema.sql
+
+OPCIÓN 3: Ejecutar manualmente en pgAdmin:
+  1. Abrir pgAdmin
+  2. Conectar a servidor PostgreSQL
+  3. Crear nueva base de datos: sgdea_trd
+  4. Copiar y pegar el script SQL en el query editor
+  5. Ejecutar consulta
+
+================================================================================
+ESTRUCTURA DE TABLAS:
+================================================================================
+
+1. OFICINA (Nivel Raíz - T0)
+   - id_oficina (PK, SERIAL)
+   - codigo_oficina (VARCHAR 10, UNIQUE)
+   - nombre_oficina (VARCHAR 150)
+   - dependencia (VARCHAR 150, NULLABLE)
+   - activa (BOOLEAN, DEFAULT TRUE)
+   - fecha_creacion (TIMESTAMP)
+   - fecha_actualizacion (TIMESTAMP)
+   
+   Índices:
+   - idx_oficina_codigo (en codigo_oficina)
+   
+   Datos Iniciales:
+   - Código: 144 | Nombre: Dirección de Archivo
+
+---
+
+2. SERIE (Nivel 1 - T1)
+   - id_serie (PK, SERIAL)
+   - id_oficina (FK → oficina)
+   - codigo (VARCHAR 20, UNIQUE)
+   - nombre (VARCHAR 150)
+   - tiempo_gestion (INTEGER, años)
+   - tiempo_central (INTEGER, años)
+   - descripcion (TEXT)
+   - activo (BOOLEAN)
+   - fecha_creacion (TIMESTAMP)
+   - fecha_actualizacion (TIMESTAMP)
+   
+   Restricción: ON DELETE RESTRICT (no eliminar si tiene series)
+   Índices: idx_serie_codigo, idx_serie_oficina
+   
+   Datos Iniciales: 6 series cargadas
+   - 144.01: ACTAS (5 años gestión)
+   - 144.04: ATENCIÓN QUEJAS PETICIONES Y SUGERENCIAS (5 años)
+   - 144.21: FACTURACIÓN (2 años gestión, 5 central)
+   - 144.24: INVENTARIOS (2 años gestión)
+   - 144.27: MANUALES (2 años gestión, 8 central)
+   - 144.30: PLANES Y PROGRAMAS (2 años gestión)
+
+---
+
+3. SUBSERIE (Nivel 2 - T2)
+   - id_subserie (PK, SERIAL)
+   - id_serie (FK → serie)
+   - codigo (VARCHAR 20, UNIQUE)
+   - nombre (VARCHAR 150)
+   - descripcion (TEXT)
+   - activa (BOOLEAN, DEFAULT TRUE)
+   - fecha_creacion (TIMESTAMP)
+   
+   Restricción: ON DELETE RESTRICT
+   Índices: idx_subserie_serie, idx_subserie_codigo
+   
+   Datos Iniciales: 7 subseries cargadas
+
+---
+
+4. TIPO DOCUMENTAL (Nivel 3 - T3)
+   - id_tipo (PK, SERIAL)
+   - id_subserie (FK → subserie)
+   - nombre (VARCHAR 150)
+   - descripcion (TEXT)
+   - activo (BOOLEAN, DEFAULT TRUE)
+   - fecha_creacion (TIMESTAMP)
+   
+   Restricción: ON DELETE RESTRICT
+   Índices: idx_tipo_subserie
+
+---
+
+5. ARCHIVO (Nivel 4 - Documentos)
+   - id_archivo (PK, SERIAL)
+   - id_tipo (FK → tipo_documental)
+   - nombre_archivo (VARCHAR 200)
+   - estado (VARCHAR 20: fisico|digital|ambos)
+   - ruta_pdf (VARCHAR 500)
+   - fecha_documento (DATE)
+   - fecha_carga (TIMESTAMP)
+   - tamaño_kb (INTEGER)
+   - hash_md5 (CHAR 32)
+   - subido_por (VARCHAR 100)
+   - observaciones (TEXT)
+   - activo (BOOLEAN, DEFAULT TRUE)
+   - fecha_actualizacion (TIMESTAMP)
+   
+   Restricción: ON DELETE RESTRICT
+   Índices: idx_archivo_tipo, idx_archivo_estado, idx_archivo_fecha
+
+---
+
+6. DISPOSICION FINAL (Políticas de Retención)
+   - id_disposicion (PK, SERIAL)
+   - id_serie (FK → serie, UNIQUE)
+   - conservacion_total (BOOLEAN)
+   - eliminacion (BOOLEAN)
+   - microfilmacion (BOOLEAN)
+   - seleccion (BOOLEAN)
+   - observaciones (TEXT)
+   - fecha_creacion (TIMESTAMP)
+   
+   Datos Iniciales: 6 disposiciones (una por serie)
+
+---
+
+7. AUDITORIA_TRD (Tracking de Cambios)
+   - id_auditoria (PK, SERIAL)
+   - usuario (VARCHAR 100)
+   - accion (VARCHAR 50)
+   - tabla (VARCHAR 50)
+   - registro_id (INTEGER)
+   - datos_anteriores (JSONB)
+   - datos_nuevos (JSONB)
+   - fecha_accion (TIMESTAMP)
+   
+   Índices: idx_auditoria_tabla, idx_auditoria_fecha
+
+================================================================================
+VISTAS ÚTILES:
+================================================================================
+
+1. vista_jerarquia
+   Muestra la jerarquía completa desde oficina hasta archivos con conteo.
+   Campos: id_oficina, codigo_oficina, nombre_oficina, id_serie, 
+           serie_codigo, serie_nombre, id_subserie, subserie_codigo, 
+           subserie_nombre, id_tipo, tipo_nombre, total_archivos
+
+2. vista_archivos_disposicion
+   Archivos agrupados por serie con información de disposición final.
+   Campos: id_serie, codigo, serie_nombre, tiempo_gestion, 
+           tiempo_central, conservacion_total, eliminacion, seleccion, 
+           microfilmacion, total_archivos
+
+================================================================================
+CONFIGURACIÓN (archivo .env):
+================================================================================
+
+PG_HOST=localhost
+PG_PORT=5432
+PG_USER=postgres
+PG_PASSWORD=daloce05
+PG_DATABASE=sgdea_trd
+PG_POOL_MAXIMO=20
+PG_TIMEOUT_INACTIVIDAD=30000
+PG_TIMEOUT_CONEXION=2000
+
+================================================================================
+VARIABLES DE ENTORNO NECESARIAS:
+================================================================================
+
+Las siguientes variables están configured en .env:
+
+PUERTO=3000
+AMBIENTE=desarrollo
+JWT_SECRETO=tu_clave_secreta_cambiar_en_produccion_sgdea_2024
+EXPIRACION_TOKEN=24h
+ORIGEN_PERMITIDO=http://localhost:3001
+
+================================================================================
+CONEXIÓN A LA BASE DE DATOS:
+================================================================================
+
+Usar Pool de conexiones con máximo 20 conexiones simultáneas:
+- Timeout de inactividad: 30 segundos
+- Timeout de conexión: 2 segundos
+
+El módulo de configuración (config/postgresqlTRD.js) maneja automáticamente:
+- Creación del pool de conexiones
+- Manejo de errores de conexión
+- Cierre de conexiones inactivas
+
+================================================================================
+RELACIONES Y RESTRICCIONES:
+================================================================================
+
+Todas las claves foráneas usan ON DELETE RESTRICT para asegurar
+integridad referencial. Esto significa:
+
+✗ No puedes eliminar una oficina que tenga series
+✗ No puedes eliminar una serie que tenga subseries
+✗ No puedes eliminar una subserie que tenga tipos documentales
+✗ No puedes eliminar un tipo que tenga archivos
+
+Solución: Usar soft delete (actualizar campo 'activo' a FALSE)
+
+================================================================================
+DATOS INICIALES CARGADOS:
+================================================================================
+
+OFICINAS: 1
+- Dirección de Archivo (código: 144)
+
+SERIES: 6
+- Todas asociadas a la Dirección de Archivo
+
+SUBSERIES: 7
+- Distribuidas en las primeras 5 series
+
+TIPOS DOCUMENTALES: 0 (creados según necesidad)
+
+ARCHIVOS: 0 (creados al cargar documentos)
+
+DISPOSICIONES FINALES: 6 (una por cada serie)
+
+================================================================================
+VERIFICACIÓN DESPUÉS DE INICIALIZAR:
+================================================================================
+
+1. Verificar que PostgreSQL está corriendo:
+   psql -U postgres -c "SELECT VERSION();"
+
+2. Verificar conexión a la base de datos:
+   node -e "require('./config/postgresqlTRD').probarConexionPostgres();"
+
+3. Contar registros:
+   SELECT 
+     (SELECT COUNT(*) FROM oficina) AS oficinas,
+     (SELECT COUNT(*) FROM serie) AS series,
+     (SELECT COUNT(*) FROM subserie) AS subseries;
+
+4. Ver jerarquía:
+   SELECT * FROM vista_jerarquia;
+
+================================================================================
+MANTENIMIENTO:
+================================================================================
+
+1. Hacer respaldo:
+   pg_dump -U postgres sgdea_trd > backup_sgdea_trd.sql
+
+2. Restaurar desde respaldo:
+   psql -U postgres -d sgdea_trd < backup_sgdea_trd.sql
+
+3. Limpiar auditoría (opcional):
+   DELETE FROM auditoria_trd WHERE fecha_accion < NOW() - INTERVAL '6 months';
+
+4. Reindexar tablas:
+   REINDEX DATABASE sgdea_trd;
+
+================================================================================
+TROUBLESHOOTING:
+================================================================================
+
+ERROR: "la base de datos «sgdea_trd» ya existe"
+SOLUCIÓN: El script elimina y recrea la base de datos automáticamente.
+
+ERROR: "conexión rechazada"
+SOLUCIÓN: Verificar que PostgreSQL está corriendo y .env tiene credenciales correctas.
+
+ERROR: "relación «oficina» no existe"
+SOLUCIÓN: El script no se ejecutó completamente. Ejecutar init_database.js nuevamente.
+
+ERROR: "violación de restricción de clave foránea"
+SOLUCIÓN: No se puede eliminar registros que tienen referencias. Usar soft delete.
+
+================================================================================
+CONTACTO Y SOPORTE:
+================================================================================
+
+Sistema: SGDEA (Sistema de Gestión Documental Empresarial Avanzado)
+Módulo: TRD (Tabla de Retención Documental)
+Versión: 1.0.0
+Fecha: Marzo 2026
+
+Para más información, ver documentación en: /docs/
+
+================================================================================

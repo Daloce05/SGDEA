@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGDEA TRD - Guía de Uso</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background-color: #F9FAFB;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #3B82F6;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #10B981;
+            padding-bottom: 10px;
+        }
+
+        .step {
+            background-color: #F3F4F6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3B82F6;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #3B82F6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .step h3 {
+            display: inline-block;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            margin-left: 40px;
+            color: #6B7280;
+        }
+
+        .tip {
+            background-color: #ECFDF5;
+            border-left: 4px solid #10B981;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .tip strong {
+            color: #047857;
+        }
+
+        .warning {
+            background-color: #FEF2F2;
+            border-left: 4px solid #EF4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .warning strong {
+            color: #DC2626;
+        }
+
+        .info {
+            background-color: #EFF6FF;
+            border-left: 4px solid #3B82F6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .info strong {
+            color: #1D4ED8;
+        }
+
+        code {
+            background-color: #F3F4F6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #7C3AED;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        th {
+            background-color: #F3F4F6;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        tr:hover {
+            background-color: #F9FAFB;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #10B981;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        footer {
+            background-color: #F3F4F6;
+            padding: 20px;
+            text-align: center;
+            color: #6B7280;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #6B7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Guía de Uso - TRD SGDEA</h1>
+            <p>Aprende a usar la plataforma paso a paso</p>
+        </header>
+
+        <div class="content">
+            <!-- INICIO RÁPIDO -->
+            <section class="section">
+                <h2>🚀 Inicio Rápido</h2>
+
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-icon">📂</div>
+                        <h3>Crear Serie</h3>
+                        <p>Categoría principal para agrupar documentos</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📋</div>
+                        <h3>Crear Subserie</h3>
+                        <p>Subdivide tus series en subsecciones</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🏷️</div>
+                        <h3>Crear Tipo</h3>
+                        <p>Define tipos específicos de documentos</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📤</div>
+                        <h3>Cargar Archivo</h3>
+                        <p>Sube tus documentos PDF</p>
+                    </div>
+                </div>
+
+                <div class="tip">
+                    <strong>💡 Consejo:</strong> Sigue la jerarquía: Serie → Subserie → Tipo → Archivo. No puedes saltar niveles.
+                </div>
+            </section>
+
+            <!-- CREAR SERIE -->
+            <section class="section">
+                <h2>📑 Crear una Serie</h2>
+
+                <div class="step">
+                    <strong><span class="step-number">1</span> Selecciona "📑 Series" en el menú izquierdo</h3>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">2</span> Haz clic en el botón "+ Nueva Serie"</strong>
+                    <p>Se abrirá un formulario modal</p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">3</span> Completa los campos requeridos:</strong>
+                    <p>
+                        <strong>Código:</strong> Identificador breve (Ej: GA, FN, VT)<br>
+                        <strong>Nombre:</strong> Nombre descriptivo (Ej: Gestión Administrativa)<br>
+                        <strong>Años Retención:</strong> Cuántos años guardar (Ej: 5)<br>
+                        <strong>Descripción:</strong> Opcional, para notas adicionales
+                    </p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">4</span> Haz clic en "Guardar"</strong>
+                    <p>Verás un ✓ verde confirmando la creación</p>
+                </div>
+
+                <div class="info">
+                    <strong>ℹ️ Nota:</strong> Los códigos deben ser únicos. No puedes tener dos series con el mismo código.
+                </div>
+            </section>
+
+            <!-- CREAR SUBSERIE -->
+            <section class="section">
+                <h2>📄 Crear una Subserie</h2>
+
+                <div class="step">
+                    <strong><span class="step-number">1</span> Selecciona "📄 Subseries" en el menú</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">2</span> Selecciona una SERIE en el dropdown</strong>
+                    <p>Solo verás subseries de la serie elegida</p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">3</span> Haz clic en "+ Nueva Subserie"</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">4</span> Completa el formulario</strong>
+                    <p>
+                        <strong>Serie Padre:</strong> Selecciona la serie donde irá<br>
+                        <strong>Código:</strong> Ej: GA-RH (Gestión Admin - Recursos Humanos)<br>
+                        <strong>Nombre:</strong> Nombre completo<br>
+                        <strong>Descripción:</strong> Opcional
+                    </p>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ Importante:</strong> Una subserie DEBE tener una serie padre. No puedes crear subserie sin serie.
+                </div>
+            </section>
+
+            <!-- CREAR TIPO -->
+            <section class="section">
+                <h2>📋 Crear un Tipo Documental</h2>
+
+                <div class="step">
+                    <strong><span class="step-number">1</span> Selecciona "📋 Tipos Documentales"</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">2</span> Selecciona una SUBSERIE</strong>
+                    <p>Primero selecciona serie, luego subserie</p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">3</span> Haz clic en "+ Nuevo Tipo"</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">4</span> Completa los datos</strong>
+                    <p>
+                        <strong>Subserie:</strong> Automático o selecciona<br>
+                        <strong>Código:</strong> Ej: CNTR, EV, NOM<br>
+                        <strong>Nombre:</strong> Ej: Contratos, Evaluaciones, Nóminas<br>
+                        <strong>Descripción:</strong> Opcional
+                    </p>
+                </div>
+
+                <div class="tip">
+                    <strong>💡 Consejo:</strong> Los códigos de tipo pueden ser más cortos. Ej: CNTR para Contratos.
+                </div>
+            </section>
+
+            <!-- CARGAR ARCHIVO -->
+            <section class="section">
+                <h2>📤 Cargar un Archivo PDF</h2>
+
+                <div class="step">
+                    <strong><span class="step-number">1</span> Selecciona "📦 Archivos"</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">2</span> Selecciona el TIPO DOCUMENTAL</strong>
+                    <p>Serie → Subserie → Tipo en los dropdowns</p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">3</span> Haz clic en "📤 Cargar Archivo"</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">4</span> Dos opciones para seleccionar archivo:</strong>
+                    <p>
+                        <strong>Opción 1:</strong> Haz clic en el área gris<br>
+                        <strong>Opción 2:</strong> Arrastra PDF sobre el área gris
+                    </p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">5</span> Selecciona el ESTADO del documento</strong>
+                    <p>
+                        <strong>Digital:</strong> Solo en sistema<br>
+                        <strong>Físico:</strong> Solo en oficina<br>
+                        <strong>Híbrido:</strong> En ambos lugares
+                    </p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">6</span> Haz clic en "Cargar"</strong>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ Requisitos:</strong> Solo se aceptan archivos PDF. Máximo 100 MB por archivo.
+                </div>
+            </section>
+
+            <!-- DESCARGAR ARCHIVO -->
+            <section class="section">
+                <h2>⬇️ Descargar un Archivo</h2>
+
+                <div class="step">
+                    <strong><span class="step-number">1</span> Ve a "📦 Archivos"</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">2</span> Selecciona el tipo donde está el archivo</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">3</span> Busca el archivo en la tabla</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">4</span> Haz clic en el botón "⬇️"</strong>
+                    <p>El archivo se descargará automáticamente</p>
+                </div>
+
+                <div class="tip">
+                    <strong>💡 Consejo:</strong> Puedes verificar la integridad con el hash MD5 mostrado en los detalles del archivo.
+                </div>
+            </section>
+
+            <!-- BUSCAR -->
+            <section class="section">
+                <h2>🔎 Buscar Archivos</h2>
+
+                <div class="step">
+                    <strong><span class="step-number">1</span> Selecciona "🔎 Búsqueda" en el menú</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">2</span> Completa uno o más criterios:</strong>
+                    <p>
+                        <strong>Nombre:</strong> Busca en el nombre del archivo<br>
+                        <strong>Estado:</strong> Filtra por digital/físico/híbrido<br>
+                        <strong>Fechas:</strong> Rango de fechas de creación
+                    </p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">3</span> Haz clic en "Buscar"</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">4</span> Ver resultados</strong>
+                    <p>Los archivos coincidentes aparecerán en la tabla</p>
+                </div>
+
+                <div class="info">
+                    <strong>ℹ️ Nota:</strong> Puedes combinar criterios. La búsqueda es flexible.
+                </div>
+            </section>
+
+            <!-- ESTADÍSTICAS -->
+            <section class="section">
+                <h2>📊 Ver Estadísticas</h2>
+
+                <div class="step">
+                    <strong><span class="step-number">1</span> Selecciona "📊 Estadísticas" en el menú</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">2</span> Ver tarjetas de resumen:</strong>
+                    <p>
+                        📦 Total de archivos en el sistema<br>
+                        💾 Espacio total usado en MB<br>
+                        💿 Archivos digitales<br>
+                        📄 Archivos físicos<br>
+                        🔀 Archivos híbridos<br>
+                        📋 Tamaño promedio por archivo
+                    </p>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">3</span> Ver gráfico de distribución</strong>
+                    <p>Muestra visualmente la proporción digital/físico/híbrido</p>
+                </div>
+            </section>
+
+            <!-- MANTENIMIENTO -->
+            <section class="section">
+                <h2>🔧 Mantenimiento y Opciones</h2>
+
+                <table>
+                    <tr>
+                        <th>Opción</th>
+                        <th>Descripción</th>
+                        <th>Ubicación</th>
+                    </tr>
+                    <tr>
+                        <td>🔄 Refrescar</td>
+                        <td>Recarga todos los datos del servidor</td>
+                        <td>Sidebar → ⚙️ Sistema</td>
+                    </tr>
+                    <tr>
+                        <td>🗑️ Limpiar Cache</td>
+                        <td>Borra datos locales del navegador</td>
+                        <td>Sidebar → ⚙️ Sistema</td>
+                    </tr>
+                    <tr>
+                        <td>● Estado</td>
+                        <td>Muestra si está conectado al backend</td>
+                        <td>Header (arriba a la derecha)</td>
+                    </tr>
+                </table>
+
+                <div class="tip">
+                    <strong>💡 Consejo:</strong> Si algo no actualiza, haz clic en "Refrescar" para sincronizar con el servidor.
+                </div>
+            </section>
+
+            <!-- ELIMINAR/DESACTIVAR -->
+            <section class="section">
+                <h2>❌ Eliminar o Desactivar Elementos</h2>
+
+                <div class="warning">
+                    <strong>⚠️ Importante:</strong> Los elementos no se BORRAN, solo se desactivan. Tus datos siempre quedan guardados.
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">1</span> Busca el elemento en la tabla</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">2</span> Haz clic en el botón "X" (Rojo)</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">3</span> Confirma la acción en el diálogo</strong>
+                </div>
+
+                <div class="step">
+                    <strong><span class="step-number">4</span> El elemento desaparecerá de la vista</strong>
+                    <p>Pero quedará en la base de datos para auditoría</p>
+                </div>
+
+                <div class="info">
+                    <strong>ℹ️ Nota:</strong> No puedes desactivar una serie si tiene subseries activas. Primero desactiva las subseries.
+                </div>
+            </section>
+
+            <!-- PROBLEMAS -->
+            <section class="section">
+                <h2>🐛 Solución de Problemas</h2>
+
+                <table>
+                    <tr>
+                        <th>Problema</th>
+                        <th>Solución</th>
+                    </tr>
+                    <tr>
+                        <td>Muestra "● Desconectado"</td>
+                        <td>Verifica que backend corre en localhost:3000. Intenta refrescar F5.</td>
+                    </tr>
+                    <tr>
+                        <td>No ves los datos creados</td>
+                        <td>Haz clic en "🔄 Refrescar" o presiona F5</td>
+                    </tr>
+                    <tr>
+                        <td>"Error cargando series"</td>
+                        <td>Backend no responde. Inicia con: npm run dev</td>
+                    </tr>
+                    <tr>
+                        <td>No puedo cargar PDF</td>
+                        <td>¿Es PDF? ¿Menos de 100MB? ¿Seleccionaste tipo?</td>
+                    </tr>
+                    <tr>
+                        <td>Dropdown vacío</td>
+                        <td>Primero crea elementos padre (serie > subserie > tipo)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- CONSEJOS -->
+            <section class="section">
+                <h2>💡 Consejos y Buenas Prácticas</h2>
+
+                <div class="tip">
+                    <strong>1. Nómina clara:</strong> Usa códigos significativos (GA, RH, FN) para fácil identificación.
+                </div>
+
+                <div class="tip">
+                    <strong>2. Jerarquía:**
+                    Sigue siempre SERIE → SUBSERIE → TIPO → ARCHIVO. No intentes saltar niveles.
+                </div>
+
+                <div class="tip">
+                    <strong>3. Descripciones:</strong> Agrega descripciones claras para que otros sepan qué contiene cada sección.
+                </div>
+
+                <div class="tip">
+                    <strong>4. Revisión regular:</strong> Usa Estadísticas para monitorear crecimiento del almacenamiento.
+                </div>
+
+                <div class="tip">
+                    <strong>5. Búsqueda:</strong> Aprende a usar los filtros avanzados para encontrar documentos rápido.
+                </div>
+
+                <div class="warning">
+                    <strong>6. Respaldo:</strong> El sistema guarda todo automáticamente. Pero haz backups periódicos de la BD.
+                </div>
+            </section>
+
+            <!-- ACCESOS RÁPIDOS -->
+            <section class="section">
+                <h2>⌨️ Accesos Rápidos</h2>
+
+                <table>
+                    <tr>
+                        <th>Tarea</th>
+                        <th>Pasos desde Menú</th>
+                    </tr>
+                    <tr>
+                        <td>Nueva Serie</td>
+                        <td>📑 Series → + Nueva Serie</td>
+                    </tr>
+                    <tr>
+                        <td>Nueva Subserie</td>
+                        <td>📄 Subseries → (Select Serie) → + Nueva</td>
+                    </tr>
+                    <tr>
+                        <td>Nuevo Tipo</td>
+                        <td>📋 Tipos → (Select Subserie) → + Nuevo</td>
+                    </tr>
+                    <tr>
+                        <td>Cargar Archivo</td>
+                        <td>📦 Archivos → (Select Tipo) → 📤 Cargar</td>
+                    </tr>
+                    <tr>
+                        <td>Buscar Documento</td>
+                        <td>🔎 Búsqueda → (Criterios) → Buscar</td>
+                    </tr>
+                    <tr>
+                        <td>Ver Estadísticas</td>
+                        <td>📊 Estadísticas</td>
+                    </tr>
+                </table>
+            </section>
+
+            <div class="button-group" style="justify-content: center; margin-top: 40px;">
+                <a href="index.html" class="btn btn-primary">← Volver a la App</a>
+                <a href="./README.md" class="btn btn-secondary">📖 Ver Documentación Técnica</a>
+            </div>
+        </div>
+
+        <footer>
+            <p>📋 SGDEA TRD - Frontend v1.0.0 | Guía de Uso Completa</p>
+            <p style="margin-top: 10px; font-size: 12px;">Última actualización: Marzo 2026</p>
+        </footer>
+    </div>
+</body>
+</html>
