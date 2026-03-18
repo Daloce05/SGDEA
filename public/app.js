@@ -341,9 +341,9 @@ async function eliminarSerie(id) {
 }
 
 function actualizarSelectSeries(series) {
-    const select = document.getElementById('subserie-serie-parent');
+    const select = document.getElementById('filter-serie');
     select.innerHTML = '<option value="">Selecciona una serie...</option>' +
-        series.map(s => `<option value="${s.id_serie}">${s.nombre}</option>`).join('');
+        series.map(s => `<option value="${s.id_serie}">${s.codigo} - ${s.nombre}</option>`).join('');
 }
 
 function verDetallesSerie(id) {
@@ -494,9 +494,9 @@ async function eliminarSubserie(idSerie, idSubserie) {
 }
 
 function actualizarSelectSubseries(subseries) {
-    const select = document.getElementById('tipo-subserie-parent');
+    const select = document.getElementById('filter-subserie');
     select.innerHTML = '<option value="">Selecciona una subserie...</option>' +
-        subseries.map(s => `<option value="${s.id_subserie}">${s.nombre}</option>`).join('');
+        subseries.map(s => `<option value="${s.id_subserie}">${s.codigo} - ${s.nombre}</option>`).join('');
 }
 
 function abrirModalSubserie() {
