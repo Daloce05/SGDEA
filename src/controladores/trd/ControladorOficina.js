@@ -155,6 +155,47 @@ class ControladorOficina {
   }
 
   /**
+   * Desactiva una oficina
+   * @async
+   * @param {Object} req - Objeto de petición Express
+   * @param {number} req.params.idOficina - ID de la oficina
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {Promise<void>}
+   */
+  static async desactivar(req, res) {
+    try {
+      const { idOficina } = req.params;
+
+      const oficina = await ModeloOficina.obtenerPorId(idOficina);
+      if (!oficina) {
+        return res.status(404).json({ 
+          exito: false, 
+          error: 'Oficina no encontrada' 
+        });
+      }
+
+      const desactivada = await ModeloOficina.desactivar(idOficina);
+
+      if (!desactivada) {
+        return res.status(400).json({ 
+          exito: false, 
+          error: 'No se pudo desactivar' 
+        });
+      }
+
+      logger.info(`Oficina desactivada: ${idOficina}`);
+
+      res.json({ exito: true, datos: { mensaje: 'Oficina desactivada' } });
+    } catch (error) {
+      logger.error(`Error al desactivar oficina: ${error.message}`);
+      res.status(500).json({ 
+        exito: false, 
+        error: 'Error al desactivar oficina' 
+      });
+    }
+  }
+
+  /**
    * Actualiza una oficina
    * @async
    * @param {Object} req - Objeto de petición Express

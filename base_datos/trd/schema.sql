@@ -101,6 +101,7 @@ ON CONFLICT (codigo) DO NOTHING;
 CREATE TABLE IF NOT EXISTS tipo_documental (
     id_tipo             SERIAL PRIMARY KEY,
     id_subserie         INTEGER NOT NULL,
+    codigo              VARCHAR(50),
     nombre              VARCHAR(150) NOT NULL,
     descripcion         TEXT,
     activo              BOOLEAN DEFAULT TRUE,
@@ -110,6 +111,10 @@ CREATE TABLE IF NOT EXISTS tipo_documental (
 );
 
 CREATE INDEX idx_tipo_subserie ON tipo_documental(id_subserie);
+CREATE INDEX idx_tipo_codigo ON tipo_documental(codigo);
+
+-- Agregar columna codigo si no existe (para tablas existentes)
+ALTER TABLE tipo_documental ADD COLUMN IF NOT EXISTS codigo VARCHAR(50);
 
 -- ============================================
 -- T4: ARCHIVOS (Documentos físicos o digitales)

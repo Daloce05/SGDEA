@@ -13,16 +13,39 @@ class ModeloSubserie {
    * Obtiene todas las subseries de una serie
    * @async
    * @param {number} idSerie - ID de la serie padre
-   * @returns {Promise<Array>} Lista de subseries
+   * @returns {Promise<Array>} Lista de subseries con contador de tipos
    */
   static async obtenerPorSerie(idSerie) {
     try {
-      const resultado = await pool.query(
-        `SELECT * FROM subserie 
-         WHERE id_serie = $1 AND activa = true 
-         ORDER BY codigo ASC`,
-        [idSerie]
-      );
+      let resultado;
+      try {
+        // Intentar primero con esquema nuevo (activo)
+        resultado = await pool.query(
+          `SELECT 
+            s.*,
+            COALESCE(COUNT(td.id_tipo), 0) as total_tipos
+           FROM subserie s
+           LEFT JOIN tipo_documental td ON s.id_subserie = td.id_subserie AND td.activo = true
+           WHERE s.id_serie = $1 AND s.activa = true 
+           GROUP BY s.id_subserie, s.id_serie, s.codigo, s.nombre, s.descripcion, s.fecha_creacion
+           ORDER BY s.codigo ASC`,
+          [idSerie]
+        );
+      } catch (schemaError) {
+        // Fallback a esquema antiguo (activa)
+        logger.info('obtenerPorSerie: Intentando con esquema antiguo...');
+        resultado = await pool.query(
+          `SELECT 
+            s.*,
+            COALESCE(COUNT(td.id_tipo), 0) as total_tipos
+           FROM subserie s
+           LEFT JOIN tipo_documental td ON s.id_subserie = td.id_subserie AND td.activa = true
+           WHERE s.id_serie = $1 AND s.activa = true 
+           GROUP BY s.id_subserie, s.id_serie, s.codigo, s.nombre, s.descripcion, s.fecha_creacion
+           ORDER BY s.codigo ASC`,
+          [idSerie]
+        );
+      }
       return resultado.rows;
     } catch (error) {
       logger.error(`Error al obtener subseries: ${error.message}`);
@@ -45,11 +68,20 @@ class ModeloSubserie {
 
       if (subserie.rows.length === 0) return null;
 
-      // Obtener tipos documentales
-      const tipos = await pool.query(
-        'SELECT * FROM tipo_documental WHERE id_subserie = $1 AND activo = true',
-        [idSubserie]
-      );
+      // Obtener tipos documentales con fallback de esquema
+      let tipos;
+      try {
+        tipos = await pool.query(
+          'SELECT * FROM tipo_documental WHERE id_subserie = $1 AND activo = true',
+          [idSubserie]
+        );
+      } catch (tiposError) {
+        logger.info('obtenerPorId tipos: Intentando con esquema antiguo...');
+        tipos = await pool.query(
+          'SELECT * FROM tipo_documental WHERE id_subserie = $1 AND activa = true',
+          [idSubserie]
+        );
+      }
 
       return {
         ...subserie.rows[0],

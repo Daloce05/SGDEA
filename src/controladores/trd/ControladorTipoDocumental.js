@@ -35,7 +35,7 @@ class ControladorTipoDocumental {
       });
     } catch (error) {
       logger.error(`Error al obtener tipos: ${error.message}`);
-      res.status(500).json({ error: 'Error al obtener tipos' });
+      res.status(500).json({ exito: false, error: 'Error al obtener tipos' });
     }
   }
 
@@ -53,7 +53,7 @@ class ControladorTipoDocumental {
 
       const tipo = await ModeloTipoDocumental.obtenerPorId(idTipo);
       if (!tipo) {
-        return res.status(404).json({ error: 'Tipo documental no encontrado' });
+        return res.status(404).json({ exito: false, error: 'Tipo documental no encontrado' });
       }
 
       res.json({
@@ -138,7 +138,7 @@ class ControladorTipoDocumental {
 
       const tipo = await ModeloTipoDocumental.obtenerPorId(idTipo);
       if (!tipo) {
-        return res.status(404).json({ error: 'Tipo no encontrado' });
+        return res.status(404).json({ exito: false, error: 'Tipo no encontrado' });
       }
 
       const actualizado = await ModeloTipoDocumental.actualizar(idTipo, {
@@ -175,7 +175,7 @@ class ControladorTipoDocumental {
 
       const tipo = await ModeloTipoDocumental.obtenerPorId(idTipo);
       if (!tipo) {
-        return res.status(404).json({ error: 'Tipo no encontrado' });
+        return res.status(404).json({ exito: false, error: 'Tipo no encontrado' });
       }
 
       const desactivado = await ModeloTipoDocumental.desactivar(idTipo);
@@ -186,10 +186,10 @@ class ControladorTipoDocumental {
 
       logger.info(`Tipo desactivado: ${idTipo}`);
 
-      res.json({ mensaje: 'Tipo desactivado' });
+      res.json({ exito: true, datos: { mensaje: 'Tipo desactivado' } });
     } catch (error) {
       logger.error(`Error al desactivar: ${error.message}`);
-      res.status(500).json({ error: error.message || 'Error' });
+      res.status(500).json({ exito: false, error: error.message || 'Error' });
     }
   }
 }

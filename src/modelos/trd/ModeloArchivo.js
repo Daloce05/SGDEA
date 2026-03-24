@@ -256,10 +256,24 @@ class ModeloArchivo {
           COUNT(CASE WHEN estado = 'digital' THEN 1 END) as archivos_digitales,
           COUNT(CASE WHEN estado = 'fisico' THEN 1 END) as archivos_fisicos,
           COUNT(CASE WHEN estado = 'ambos' THEN 1 END) as archivos_hibridos,
-          ROUND(SUM(tamaño_kb)::numeric / 1024, 2) as tamaño_total_mb
+          ROUND(SUM("tamaño_kb")::numeric / 1024, 2) as tamano_total_mb,
+          ROUND(AVG("tamaño_kb")::numeric / 1024, 2) as tamano_promedio_mb
          FROM archivo WHERE activo = true`
       );
-      return resultado.rows[0];
+      
+      const stats = resultado.rows[0];
+      
+      // Transformar a formato esperado por frontend
+      return {
+        total_archivos: parseInt(stats.total_archivos) || 0,
+        tamano_total_mb: parseFloat(stats.tamano_total_mb) || 0,
+        tamano_promedio_mb: parseFloat(stats.tamano_promedio_mb) || 0,
+        por_estado: {
+          digital: parseInt(stats.archivos_digitales) || 0,
+          fisico: parseInt(stats.archivos_fisicos) || 0,
+          hibrido: parseInt(stats.archivos_hibridos) || 0
+        }
+      };
     } catch (error) {
       logger.error(`Error al obtener estadísticas: ${error.message}`);
       throw error;

@@ -36,7 +36,7 @@ class ControladorSubserie {
       });
     } catch (error) {
       logger.error(`Error al obtener subseries: ${error.message}`);
-      res.status(500).json({ error: 'Error al obtener subseries' });
+      res.status(500).json({ exito: false, error: 'Error al obtener subseries' });
     }
   }
 
@@ -56,7 +56,7 @@ class ControladorSubserie {
       // Verificar que la serie existe
       const serie = await ModeloSerie.obtenerPorId(idSerie);
       if (!serie) {
-        return res.status(404).json({ error: 'Serie no encontrada' });
+        return res.status(404).json({ exito: false, error: 'Serie no encontrada' });
       }
 
       const subserie = await ModeloSubserie.obtenerPorId(idSubserie);
@@ -70,7 +70,7 @@ class ControladorSubserie {
       });
     } catch (error) {
       logger.error(`Error al obtener subserie: ${error.message}`);
-      res.status(500).json({ error: 'Error al obtener subserie' });
+      res.status(500).json({ exito: false, error: 'Error al obtener subserie' });
     }
   }
 
@@ -98,7 +98,7 @@ class ControladorSubserie {
       // Verificar que la serie existe
       const serie = await ModeloSerie.obtenerPorId(idSerie);
       if (!serie) {
-        return res.status(404).json({ error: 'Serie no encontrada' });
+        return res.status(404).json({ exito: false, error: 'Serie no encontrada' });
       }
 
       const idSubserie = await ModeloSubserie.crear(idSerie, {

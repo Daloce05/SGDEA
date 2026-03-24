@@ -19,7 +19,7 @@ async function validarSerie(req, res, next) {
     const { idSerie } = req.params;
 
     if (!idSerie) {
-      return res.status(400).json({ error: 'ID de serie es requerido' });
+      return res.status(400).json({ exito: false, error: 'ID de serie es requerido' });
     }
 
     const resultado = await pool.query(
@@ -28,13 +28,13 @@ async function validarSerie(req, res, next) {
     );
 
     if (resultado.rows.length === 0) {
-      return res.status(404).json({ error: 'Serie no encontrada o inactiva' });
+      return res.status(404).json({ exito: false, error: 'Serie no encontrada o inactiva' });
     }
 
     next();
   } catch (error) {
     logger.error(`Error validar serie: ${error.message}`);
-    res.status(500).json({ error: 'Error al validar serie' });
+    res.status(500).json({ exito: false, error: 'Error al validar serie' });
   }
 }
 
@@ -49,7 +49,7 @@ async function validarSubserie(req, res, next) {
     const { idSerie, idSubserie } = req.params;
 
     if (!idSerie || !idSubserie) {
-      return res.status(400).json({ error: 'ID de serie y subserie son requeridos' });
+      return res.status(400).json({ exito: false, error: 'ID de serie y subserie son requeridos' });
     }
 
     const resultado = await pool.query(
@@ -59,6 +59,7 @@ async function validarSubserie(req, res, next) {
 
     if (resultado.rows.length === 0) {
       return res.status(404).json({ 
+        exito: false,
         error: 'Subserie no encontrada, inactiva o no pertenece a esta serie' 
       });
     }
@@ -66,7 +67,7 @@ async function validarSubserie(req, res, next) {
     next();
   } catch (error) {
     logger.error(`Error validar subserie: ${error.message}`);
-    res.status(500).json({ error: 'Error al validar subserie' });
+    res.status(500).json({ exito: false, error: 'Error al validar subserie' });
   }
 }
 
@@ -81,7 +82,7 @@ async function validarTipo(req, res, next) {
     const { idTipo } = req.params;
 
     if (!idTipo) {
-      return res.status(400).json({ error: 'ID de tipo es requerido' });
+      return res.status(400).json({ exito: false, error: 'ID de tipo es requerido' });
     }
 
     const resultado = await pool.query(
@@ -90,13 +91,13 @@ async function validarTipo(req, res, next) {
     );
 
     if (resultado.rows.length === 0) {
-      return res.status(404).json({ error: 'Tipo documental no encontrado o inactivo' });
+      return res.status(404).json({ exito: false, error: 'Tipo documental no encontrado o inactivo' });
     }
 
     next();
   } catch (error) {
     logger.error(`Error validar tipo: ${error.message}`);
-    res.status(500).json({ error: 'Error al validar tipo' });
+    res.status(500).json({ exito: false, error: 'Error al validar tipo' });
   }
 }
 
@@ -111,7 +112,7 @@ async function validarArchivo(req, res, next) {
     const { idArchivo } = req.params;
 
     if (!idArchivo) {
-      return res.status(400).json({ error: 'ID de archivo es requerido' });
+      return res.status(400).json({ exito: false, error: 'ID de archivo es requerido' });
     }
 
     const resultado = await pool.query(
@@ -120,13 +121,13 @@ async function validarArchivo(req, res, next) {
     );
 
     if (resultado.rows.length === 0) {
-      return res.status(404).json({ error: 'Archivo no encontrado o inactivo' });
+      return res.status(404).json({ exito: false, error: 'Archivo no encontrado o inactivo' });
     }
 
     next();
   } catch (error) {
     logger.error(`Error validar archivo: ${error.message}`);
-    res.status(500).json({ error: 'Error al validar archivo' });
+    res.status(500).json({ exito: false, error: 'Error al validar archivo' });
   }
 }
 
@@ -143,7 +144,7 @@ function validarIds(req, res, next) {
 
   for (const [key, value] of Object.entries(ids)) {
     if (value && isNaN(parseInt(value))) {
-      return res.status(400).json({ error: `${key} debe ser un número válido` });
+      return res.status(400).json({ exito: false, error: `${key} debe ser un número válido` });
     }
   }
 

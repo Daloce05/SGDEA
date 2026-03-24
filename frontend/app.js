@@ -94,6 +94,8 @@ function setupEventListeners() {
 // ============================================
 
 function cambiarSeccion(section) {
+    console.log(`🔄 Cambiando a sección: ${section}`);
+    
     // Ocultar todas las secciones
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -101,6 +103,12 @@ function cambiarSeccion(section) {
     // Mostrar sección activa
     document.getElementById(`${section}-section`).classList.add('active');
     document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+    // Cargar datos según la sección
+    if (section === 'tipos') {
+        console.log('📋 Cargando subseries para sección de tipos...');
+        cargarTodasLasSubseries();
+    }
 }
 
 // ============================================
@@ -379,14 +387,155 @@ async function cargarSeriesParaModal() {
 // TIPOS DOCUMENTALES
 // ============================================
 
+async function cargarTodasLasSubseries() {
+    try {
+        console.log('🔍 Cargando todas las subseries...');
+        
+        // Primero, obtener series
+        const seriesResponse = await fetch(`${API_BASE}/series`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!seriesResponse.ok) {
+            console.error('❌ Error obteniendo series:', seriesResponse.statusText, seriesResponse.status);
+            mostrarError(`Error: ${seriesResponse.statusText}`);
+            return;
+        }
+
+        const seriesData = await seriesResponse.json();
+        console.log('📊 Datos de series:', seriesData);
+
+        if (!seriesData.exito) {
+            console.error('❌ Error en respuesta de series:', seriesData);
+            mostrarError(seriesData.error || 'Error obteniendo series');
+            return;
+        }
+
+        if (!seriesData.datos || seriesData.datos.length === 0) {
+            console.warn('⚠️ No hay series disponibles');
+            return;
+        }
+
+        let todasLasSubseries = [];
+        const totalSeries = seriesData.datos.length;
+        let procesadas = 0;
+
+        // Obtener subseries de cada serie en paralelo
+        const promesasSubseries = seriesData.datos.map(async (serie) => {
+            try {
+                console.log(`📂 Obteniendo subseries de serie ${serie.id_serie} (${serie.nombre})...`);
+                
+                const respSub = await fetch(`${API_BASE}/series/${serie.id_serie}/subseries`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!respSub.ok) {
+                    console.warn(`⚠️ Error en serie ${serie.id_serie}: ${respSub.statusText}`);
+                    return [];
+                }
+
+                const dataSub = await respSub.json();
+                console.log(`✓ Respuesta subseries (${serie.id_serie}):`, dataSub);
+
+                procesadas++;
+                console.log(`📊 Progreso: ${procesadas}/${totalSeries}`);
+
+                if (dataSub.exito && Array.isArray(dataSub.datos)) {
+                    return dataSub.datos;
+                }
+                return [];
+            } catch (error) {
+                console.error(`💥 Error procesando serie ${serie.id_serie}:`, error);
+                return [];
+            }
+        });
+
+        // Aguardar todas las promesas en paralelo
+        const resultados = await Promise.all(promesasSubseries);
+        
+        // Concatenar todas las subseries
+        todasLasSubseries = resultados.flat();
+        
+        console.log('✅ Total subseries recolectadas:', todasLasSubseries.length, todasLasSubseries);
+
+        // Llenar dropdown de filtro
+        const select = document.getElementById('filter-subserie');
+        if (select) {
+            if (todasLasSubseries.length === 0) {
+                select.innerHTML = '<option value="">No hay subseries disponibles</option>';
+            } else {
+                select.innerHTML = '<option value="">Selecciona una subserie...</option>' +
+                    todasLasSubseries.map(s => `<option value="${s.id_subserie}">${s.nombre}</option>`).join('');
+            }
+            console.log('✓ Dropdown principal actualizado');
+        } else {
+            console.error('❌ No encontré elemento #filter-subserie');
+        }
+
+        // Llenar dropdown del modal
+        const selectModal = document.getElementById('tipo-subserie-parent');
+        if (selectModal) {
+            if (todasLasSubseries.length === 0) {
+                selectModal.innerHTML = '<option value="">No hay subseries disponibles</option>';
+            } else {
+                selectModal.innerHTML = '<option value="">Selecciona una subserie...</option>' +
+                    todasLasSubseries.map(s => `<option value="${s.id_subserie}">${s.nombre}</option>`).join('');
+            }
+            console.log('✓ Dropdown del modal actualizado');
+        }
+
+        if (todasLasSubseries.length === 0) {
+            console.warn('⚠️ No se encontraron subseries');
+            mostrarError('No hay subseries disponibles. Crea subseries primero.');
+        }
+
+    } catch (error) {
+        console.error('💥 Error en cargarTodasLasSubseries:', error);
+        console.error('Stack:', error.stack);
+        mostrarError('Error de conexión: ' + error.message);
+    }
+}
+
 async function cargarTipos(idSubserie) {
-    if (!idSubserie || !currentSerie) {
+    if (!idSubserie) {
         document.getElementById('tipos-table').innerHTML = 
             '<tr class="loading"><td colspan="6">Selecciona una subserie</td></tr>';
         return;
     }
 
     try {
+        // Si no tenemos currentSerie, primero obtenemos la subserie para conseguir su serie padre
+        if (!currentSerie) {
+            const subserieResponse = await fetch(`${API_BASE}/series/0/subseries/${idSubserie}`);
+            
+            // Intentamos obtener la subserie desde todas las series
+            let serieId = null;
+            const seriesResponse = await fetch(`${API_BASE}/series`);
+            const seriesData = await seriesResponse.json();
+            
+            if (seriesData.exito) {
+                for (const serie of seriesData.datos) {
+                    const subsResponse = await fetch(`${API_BASE}/series/${serie.id_serie}/subseries`);
+                    const subsData = await subsResponse.json();
+                    if (subsData.exito) {
+                        const found = subsData.datos.find(s => s.id_subserie === parseInt(idSubserie));
+                        if (found) {
+                            serieId = serie.id_serie;
+                            currentSerie = serieId;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!serieId) {
+                mostrarError('No se pudo encontrar la serie de esta subserie');
+                return;
+            }
+        }
+
         const response = await fetch(`${API_BASE}/series/${currentSerie}/subseries/${idSubserie}/tipos`);
         const data = await response.json();
 
@@ -397,7 +546,10 @@ async function cargarTipos(idSubserie) {
             mostrarError(data.error || 'Error cargando tipos');
         }
     } catch (error) {
+        console.error('Error:', error);
         mostrarError('Error de conexión');
+    }
+}
     }
 }
 
@@ -411,7 +563,7 @@ function mostrarTipos(tipos) {
 
     tbody.innerHTML = tipos.map(tipo => `
         <tr>
-            <td><strong>${tipo.codigo}</strong></td>
+            <td><strong>${tipo.codigo || '-'}</strong></td>
             <td>${tipo.nombre}</td>
             <td>${tipo.descripcion || '-'}</td>
             <td>${tipo.id_subserie ? 'Subserie' : 'Serie'}</td>
@@ -419,7 +571,7 @@ function mostrarTipos(tipos) {
                 <span class="badge badge-active">0</span>
             </td>
             <td>
-                <button class="btn btn-small btn-danger" onclick="eliminarTipo(${currentSerie}, ${currentSubserie}, ${tipo.id_tipo_documental})">
+                <button class="btn btn-small btn-danger" onclick="eliminarTipo(${currentSerie}, ${currentSubserie}, ${tipo.id_tipo})">
                     X
                 </button>
             </td>
@@ -489,11 +641,11 @@ async function eliminarTipo(idSerie, idSubserie, idTipo) {
 function actualizarSelectTipos(tipos) {
     const select = document.getElementById('archivo-tipo-parent');
     select.innerHTML = '<option value="">Selecciona un tipo...</option>' +
-        tipos.map(t => `<option value="${t.id_tipo_documental}">${t.nombre}</option>`).join('');
+        tipos.map(t => `<option value="${t.id_tipo}">${t.nombre}</option>`).join('');
 }
 
 function abrirModalTipo() {
-    cargarSeriesParaModal();
+    cargarTodasLasSubseries();
     document.getElementById('modal-tipo').classList.add('active');
 }
 

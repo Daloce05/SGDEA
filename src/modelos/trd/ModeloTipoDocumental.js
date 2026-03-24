@@ -11,50 +11,112 @@ const logger = require('../../../config/logger');
 class ModeloTipoDocumental {
   /**
    * Obtiene todos los tipos de una subserie
+   * Compatible con ambos esquemas de BD
    * @async
    * @param {number} idSubserie - ID de la subserie
-   * @returns {Promise<Array>} Lista de tipos documentales
+   * @returns {Promise<Array>} Lista de tipos documentales (normalizada)
    */
   static async obtenerPorSubserie(idSubserie) {
     try {
-      const resultado = await pool.query(
-        `SELECT * FROM tipo_documental 
-         WHERE id_subserie = $1 AND activo = true 
-         ORDER BY nombre ASC`,
-        [idSubserie]
-      );
-      return resultado.rows;
+      // Intenta primero con el esquema nuevo, si falla usa el antiguo
+      let resultado;
+      try {
+        resultado = await pool.query(
+          `SELECT * FROM tipo_documental 
+           WHERE id_subserie = $1 AND activo = true 
+           ORDER BY nombre ASC`,
+          [idSubserie]
+        );
+      } catch (schemaError) {
+        // Si falla, intenta con el esquema antiguo
+        logger.info('Intentando con esquema antiguo...');
+        resultado = await pool.query(
+          `SELECT * FROM tipo_documental 
+           WHERE id_subserie = $1 AND activa = true 
+           ORDER BY nombre_tipo ASC`,
+          [idSubserie]
+        );
+      }
+      
+      // Normalizar campos para compatibilidad
+      return resultado.rows.map(row => {
+        console.log('📊 Raw row:', row);
+        return {
+          id_tipo: row.id_tipo,
+          id_subserie: row.id_subserie,
+          codigo: row.codigo,
+          nombre: row.nombre,
+          descripcion: row.descripcion,
+          activo: row.activo !== undefined ? row.activo : row.activa
+        };
+      });
     } catch (error) {
       logger.error(`Error al obtener tipos documentales: ${error.message}`);
+      logger.error(`Error stack: ${error.stack}`);
       throw error;
     }
   }
 
   /**
    * Obtiene un tipo documental específico con sus archivos
+   * Compatible con ambos esquemas
    * @async
    * @param {number} idTipo - ID del tipo documental
    * @returns {Promise<Object|null>} Datos del tipo con archivos
    */
   static async obtenerPorId(idTipo) {
     try {
-      const tipo = await pool.query(
-        'SELECT * FROM tipo_documental WHERE id_tipo = $1 AND activo = true',
-        [idTipo]
-      );
+      let tipo;
+      let archivos;
+      
+      // Intentar primero con el esquema nuevo
+      try {
+        tipo = await pool.query(
+          `SELECT * FROM tipo_documental 
+           WHERE id_tipo = $1 AND activo = true`,
+          [idTipo]
+        );
+      } catch (schemaError) {
+        // Si falla, intentar con esquema antiguo
+        logger.info('obtenerPorId: Intentando con esquema antiguo...');
+        tipo = await pool.query(
+          `SELECT * FROM tipo_documental 
+           WHERE id_tipo = $1 AND activa = true`,
+          [idTipo]
+        );
+      }
 
       if (tipo.rows.length === 0) return null;
 
-      // Obtener archivos
-      const archivos = await pool.query(
-        `SELECT * FROM archivo 
-         WHERE id_tipo = $1 AND activo = true 
-         ORDER BY fecha_carga DESC`,
-        [idTipo]
-      );
+      const row = tipo.rows[0];
+      const idTipoReal = row.id_tipo;
+
+      // Obtener archivos (compatible con ambos esquemas)
+      try {
+        archivos = await pool.query(
+          `SELECT * FROM archivo 
+           WHERE id_tipo = $1 AND activo = true
+           ORDER BY fecha_carga DESC`,
+          [idTipoReal]
+        );
+      } catch (archError) {
+        // Si falla con activo, intentar con activa
+        logger.info('obtenerPorId archivos: Intentando con esquema antiguo...');
+        archivos = await pool.query(
+          `SELECT * FROM archivo 
+           WHERE id_tipo = $1 AND activa = true
+           ORDER BY fecha_carga DESC`,
+          [idTipoReal]
+        );
+      }
 
       return {
-        ...tipo.rows[0],
+        id_tipo: idTipoReal,
+        id_subserie: row.id_subserie,
+        codigo: row.codigo,
+        nombre: row.nombre,
+        descripcion: row.descripcion,
+        activo: row.activo !== undefined ? row.activo : row.activa,
         archivos: archivos.rows
       };
     } catch (error) {
@@ -72,7 +134,7 @@ class ModeloTipoDocumental {
    */
   static async crear(idSubserie, datosTipo) {
     try {
-      const { nombre, descripcion } = datosTipo;
+      const { codigo, nombre, descripcion } = datosTipo;
 
       // Validar que subserie es obligatoria
       if (!idSubserie || !nombre) {
@@ -91,13 +153,13 @@ class ModeloTipoDocumental {
 
       const resultado = await pool.query(
         `INSERT INTO tipo_documental 
-         (id_subserie, nombre, descripcion)
-         VALUES ($1, $2, $3)
+         (id_subserie, codigo, nombre, descripcion)
+         VALUES ($1, $2, $3, $4)
          RETURNING id_tipo`,
-        [idSubserie, nombre, descripcion || '']
+        [idSubserie, codigo || null, nombre, descripcion || '']
       );
 
-      logger.info(`Tipo documental creado: ${nombre} bajo subserie ${idSubserie}`);
+      logger.info(`Tipo documental creado: ${nombre} (${codigo}) bajo subserie ${idSubserie}`);
       return resultado.rows[0].id_tipo;
     } catch (error) {
       logger.error(`Error al crear tipo documental: ${error.message}`);
@@ -147,6 +209,7 @@ class ModeloTipoDocumental {
 
   /**
    * Desactiva un tipo documental
+   * Compatible con ambos esquemas
    * @async
    * @param {number} idTipo - ID del tipo
    * @returns {Promise<boolean>} true si se desactivó
@@ -154,21 +217,43 @@ class ModeloTipoDocumental {
   static async desactivar(idTipo) {
     try {
       // Verificar si tiene archivos activos
-      const archivos = await pool.query(
-        'SELECT COUNT(*) FROM archivo WHERE id_tipo = $1 AND activo = true',
-        [idTipo]
-      );
+      let archivos;
+      try {
+        archivos = await pool.query(
+          `SELECT COUNT(*) as count FROM archivo 
+           WHERE id_tipo = $1 AND activo = true`,
+          [idTipo]
+        );
+      } catch (archError) {
+        logger.info('desactivar: Intentando con esquema antiguo...');
+        archivos = await pool.query(
+          `SELECT COUNT(*) as count FROM archivo 
+           WHERE id_tipo = $1 AND activa = true`,
+          [idTipo]
+        );
+      }
 
-      if (archivos.rows[0].count > 0) {
+      if (parseInt(archivos.rows[0].count) > 0) {
         throw new Error('No se puede desactivar un tipo con archivos activos');
       }
 
-      const resultado = await pool.query(
-        `UPDATE tipo_documental SET activo = false 
-         WHERE id_tipo = $1 
-         RETURNING id_tipo`,
-        [idTipo]
-      );
+      let resultado;
+      try {
+        resultado = await pool.query(
+          `UPDATE tipo_documental SET activo = false 
+           WHERE id_tipo = $1
+           RETURNING id_tipo`,
+          [idTipo]
+        );
+      } catch (updateError) {
+        logger.info('desactivar update: Intentando con esquema antiguo...');
+        resultado = await pool.query(
+          `UPDATE tipo_documental SET activa = false 
+           WHERE id_tipo = $1
+           RETURNING id_tipo`,
+          [idTipo]
+        );
+      }
 
       logger.info(`Tipo documental desactivado: ID ${idTipo}`);
       return resultado.rows.length > 0;

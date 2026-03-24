@@ -56,7 +56,7 @@ class ControladorArchivo {
 
       const archivo = await ModeloArchivo.obtenerPorId(idArchivo);
       if (!archivo) {
-        return res.status(404).json({ error: 'Archivo no encontrado' });
+        return res.status(404).json({ exito: false, error: 'Archivo no encontrado' });
       }
 
       res.json({
@@ -157,7 +157,7 @@ class ControladorArchivo {
 
       const archivo = await ModeloArchivo.obtenerPorId(idArchivo);
       if (!archivo) {
-        return res.status(404).json({ error: 'Archivo no encontrado' });
+        return res.status(404).json({ exito: false, error: 'Archivo no encontrado' });
       }
 
       // Verificar que el archivo existe en el sistema de archivos
@@ -198,13 +198,13 @@ class ControladorArchivo {
       });
 
       res.json({
-        mensaje: 'Búsqueda completada',
-        total: archivos.length,
-        archivos
+        exito: true,
+        datos: archivos,
+        total: archivos.length
       });
     } catch (error) {
       logger.error(`Error al buscar: ${error.message}`);
-      res.status(500).json({ error: 'Error en búsqueda' });
+      res.status(500).json({ exito: false, error: 'Error en búsqueda' });
     }
   }
 
@@ -220,12 +220,12 @@ class ControladorArchivo {
       const stats = await ModeloArchivo.obtenerEstadisticas();
 
       res.json({
-        mensaje: 'Estadísticas obtenidas',
-        estadisticas: stats
+        exito: true,
+        datos: stats
       });
     } catch (error) {
       logger.error(`Error: ${error.message}`);
-      res.status(500).json({ error: 'Error al obtener estadísticas' });
+      res.status(500).json({ exito: false, error: 'Error al obtener estadísticas' });
     }
   }
 
@@ -243,7 +243,7 @@ class ControladorArchivo {
 
       const archivo = await ModeloArchivo.obtenerPorId(idArchivo);
       if (!archivo) {
-        return res.status(404).json({ error: 'Archivo no encontrado' });
+        return res.status(404).json({ exito: false, error: 'Archivo no encontrado' });
       }
 
       const desactivado = await ModeloArchivo.desactivar(idArchivo);
@@ -254,10 +254,10 @@ class ControladorArchivo {
 
       logger.info(`Archivo desactivado: ${idArchivo}`);
 
-      res.json({ mensaje: 'Archivo desactivado' });
+      res.json({ exito: true, datos: { mensaje: 'Archivo desactivado' } });
     } catch (error) {
       logger.error(`Error: ${error.message}`);
-      res.status(500).json({ error: 'Error al desactivar' });
+      res.status(500).json({ exito: false, error: 'Error al desactivar' });
     }
   }
 }
