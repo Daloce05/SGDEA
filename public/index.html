@@ -165,12 +165,11 @@
             <section id="tipos-section" class="section">
                 <div class="section-header">
                     <h2>📋 Tipos Documentales</h2>
-                    <div class="filter-group">
-                        <select id="filter-subserie-tipos" class="filter-select">
-                            <option value="">Selecciona una subserie...</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="abrirModalTipo()">+ Nuevo Tipo</button>
-                    </div>
+                    <button class="btn btn-primary" onclick="abrirModalTipo()">+ Nuevo Tipo</button>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="buscar-tipos" placeholder="Buscar por código, nombre, subserie o serie...">
                 </div>
 
                 <div class="table-container">
@@ -178,16 +177,16 @@
                         <thead>
                             <tr>
                                 <th>Código</th>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Padre</th>
+                                <th>Nombre Tipo</th>
+                                <th>Subserie</th>
+                                <th>Serie</th>
                                 <th>Archivos</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tipos-table">
                             <tr class="loading">
-                                <td colspan="6">Selecciona una subserie primero</td>
+                                <td colspan="6">Cargando tipos...</td>
                             </tr>
                         </tbody>
                     </table>

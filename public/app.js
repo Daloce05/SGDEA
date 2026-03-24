@@ -15,6 +15,7 @@ const API_BASE = '/api/trd';
 let currentSerie = null;
 let currentSubserie = null;
 let currentTipo = null;
+let todosLosTiposGlobal = []; // Para almacenar todos los tipos y poder filtrar
 
 // ============================================
 // INICIALIZACIÓN
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeApp() {
     cargarOficinas();
     cargarSeries();
-    cargarTodasLasSubseries(); // NUEVO: cargar subseries para el dropdown de Tipos Documentales
+    cargarTodosLosTipos(); // Cargar tabla de tipos documentales
     actualizarEstadisticas();
     
     // FORZAR llenado de dropdowns después de cargar series
@@ -85,15 +86,6 @@ function setupEventListeners() {
         });
     }
 
-    // Para la sección de Tipos Documentales
-    const filterSubserieTipos = document.getElementById('filter-subserie-tipos');
-    if (filterSubserieTipos) {
-        filterSubserieTipos.addEventListener('change', (e) => {
-            currentSubserie = e.target.value;
-            if (currentSubserie) cargarTipos(currentSubserie);
-        });
-    }
-
     const filterTipo = document.getElementById('filter-tipo');
     if (filterTipo) {
         filterTipo.addEventListener('change', (e) => {
@@ -110,6 +102,14 @@ function setupEventListeners() {
     document.getElementById('buscar-oficinas').addEventListener('input', (e) => {
         filtrarOficinas(e.target.value);
     });
+
+    // Búsqueda de tipos documentales
+    const buscarTipos = document.getElementById('buscar-tipos');
+    if (buscarTipos) {
+        buscarTipos.addEventListener('input', (e) => {
+            filtrarTipos(e.target.value);
+        });
+    }
 
     // Carga de archivos
     const fileInput = document.getElementById('archivo-file');
@@ -292,45 +292,122 @@ async function cargarSeries() {
     }
 }
 
-// NUEVO: Cargar todas las subseries de todas las series para el dropdown de Tipos Documentales
-async function cargarTodasLasSubseries() {
+// Cargar TODOS los tipos documentales de TODAS las subseries
+async function cargarTodosLosTipos() {
     try {
         const response = await fetch(`${API_BASE}/series`);
         const seriesData = await response.json();
 
         if (!seriesData.exito || !seriesData.datos.length) return;
 
-        // Obtener todas las subseries de todas las series
-        let todasSubseries = [];
+        let todosTipos = [];
+        
+        // Para cada serie, obtener subseries y luego tipos
         for (const serie of seriesData.datos) {
             try {
                 const subsResp = await fetch(`${API_BASE}/series/${serie.id_serie}/subseries`);
                 const subsData = await subsResp.json();
                 
                 if (subsData.exito && subsData.datos) {
-                    // Agregar el id_serie a cada subserie
-                    const subsConSerie = subsData.datos.map(sub => ({
-                        ...sub,
-                        id_serie: serie.id_serie
-                    }));
-                    todasSubseries = todasSubseries.concat(subsConSerie);
+                    // Para cada subserie, obtener tipos
+                    for (const subserie of subsData.datos) {
+                        try {
+                            const tiposResp = await fetch(`${API_BASE}/series/${serie.id_serie}/subseries/${subserie.id_subserie}/tipos`);
+                            const tiposData = await tiposResp.json();
+                            
+                            if (tiposData.exito && tiposData.datos) {
+                                const tiposConContexto = tiposData.datos.map(tipo => ({
+                                    ...tipo,
+                                    id_subserie: subserie.id_subserie,
+                                    nombre_subserie: subserie.nombre,
+                                    id_serie: serie.id_serie,
+                                    nombre_serie: serie.nombre
+                                }));
+                                todosTipos = todosTipos.concat(tiposConContexto);
+                            }
+                        } catch (e) {
+                            console.error(`Error cargando tipos de subserie ${subserie.id_subserie}:`, e);
+                        }
+                    }
                 }
             } catch (e) {
                 console.error(`Error cargando subseries de serie ${serie.id_serie}:`, e);
             }
         }
 
-        // Llenar el dropdown con todas las subseries
-        if (todasSubseries.length > 0) {
-            const select = document.getElementById('filter-subserie-tipos');
-            if (select) {
-                select.innerHTML = '<option value="">Selecciona una subserie...</option>' +
-                    todasSubseries.map(s => `<option value="${s.id_subserie}" data-serie-id="${s.id_serie}">${s.codigo} - ${s.nombre}</option>`).join('');
-                console.log('✓ Dropdown filter-subserie-tipos actualizado con todas las subseries');
-            }
+        // Guardar AQUÍ y una sola vez en la variable global
+        todosLosTiposGlobal = todosTipos;
+        
+        // Mostrar tabla con todos los tipos
+        mostrarTodosTipos(todosTipos);
+    } catch (error) {
+        console.error('Error cargando todos los tipos:', error);
+    }
+}
+
+function mostrarTodosTipos(tipos) {
+    const tbody = document.getElementById('tipos-table');
+
+    if (tipos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="loading">No hay tipos documentales registrados</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = tipos.map(tipo => `
+        <tr>
+            <td><strong>${tipo.codigo || 'SIN CÓDIGO'}</strong></td>
+            <td>${tipo.nombre}</td>
+            <td>${tipo.nombre_subserie}</td>
+            <td>${tipo.nombre_serie}</td>
+            <td><span class="badge badge-active">0</span></td>
+            <td>
+                <button class="btn btn-small btn-primary" onclick="verArchivosDeTipo(${tipo.id_tipo}, '${tipo.nombre}')">
+                    Ver ▶
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filtrarTipos(texto) {
+    if (texto.trim() === '') {
+        mostrarTodosTipos(todosLosTiposGlobal);
+        return;
+    }
+
+    const textoLower = texto.toLowerCase();
+    const tiposFiltrados = todosLosTiposGlobal.filter(tipo => 
+        (tipo.codigo && tipo.codigo.toLowerCase().includes(textoLower)) ||
+        (tipo.nombre && tipo.nombre.toLowerCase().includes(textoLower)) ||
+        (tipo.nombre_subserie && tipo.nombre_subserie.toLowerCase().includes(textoLower)) ||
+        (tipo.nombre_serie && tipo.nombre_serie.toLowerCase().includes(textoLower))
+    );
+
+    mostrarTodosTipos(tiposFiltrados);
+}
+
+// Nueva función para ver archivos de un tipo específico
+async function verArchivosDeTipo(idTipo, nombreTipo) {
+    console.log(`Viendo archivos del tipo: ${nombreTipo} (${idTipo})`);
+    
+    currentTipo = idTipo;
+    
+    // Navegar a sección Archivos
+    cambiarSeccion('archivos');
+    
+    // Cargar los archivos del tipo
+    try {
+        const response = await fetch(`${API_BASE}/tipos/${idTipo}/archivos`);
+        const data = await response.json();
+        
+        if (data.exito) {
+            mostrarArchivos(data.datos);
+        } else {
+            mostrarError(data.error || 'Error cargando archivos');
         }
     } catch (error) {
-        console.error('Error cargando todas las subseries:', error);
+        console.error('Error:', error);
+        mostrarError('Error de conexión');
     }
 }
 
