@@ -78,7 +78,7 @@ class ControladorTipoDocumental {
   static async crear(req, res) {
     try {
       const { idSubserie } = req.params;
-      const { nombre, descripcion } = req.body;
+      const { codigo, nombre, descripcion } = req.body;
 
       if (!idSubserie || !nombre) {
         return res.status(400).json({ 
@@ -97,6 +97,7 @@ class ControladorTipoDocumental {
       }
 
       const idTipo = await ModeloTipoDocumental.crear(idSubserie, {
+        codigo,
         nombre,
         descripcion
       });

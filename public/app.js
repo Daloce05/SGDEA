@@ -298,9 +298,13 @@ async function cargarTodosLosTipos() {
         const response = await fetch(`${API_BASE}/series`);
         const seriesData = await response.json();
 
-        if (!seriesData.exito || !seriesData.datos.length) return;
+        if (!seriesData.exito || !seriesData.datos.length) {
+            console.warn('⚠️ No hay series disponibles');
+            return;
+        }
 
         let todosTipos = [];
+        console.log(`📑 Iniciando carga de tipos desde ${seriesData.datos.length} serie(s)...`);
         
         // Para cada serie, obtener subseries y luego tipos
         for (const serie of seriesData.datos) {
@@ -308,14 +312,20 @@ async function cargarTodosLosTipos() {
                 const subsResp = await fetch(`${API_BASE}/series/${serie.id_serie}/subseries`);
                 const subsData = await subsResp.json();
                 
-                if (subsData.exito && subsData.datos) {
+                if (subsData.exito && Array.isArray(subsData.datos)) {
+                    console.log(`  📊 Serie "${serie.nombre}": ${subsData.datos.length} subserie(s)`);
+                    
                     // Para cada subserie, obtener tipos
                     for (const subserie of subsData.datos) {
                         try {
                             const tiposResp = await fetch(`${API_BASE}/series/${serie.id_serie}/subseries/${subserie.id_subserie}/tipos`);
                             const tiposData = await tiposResp.json();
                             
-                            if (tiposData.exito && tiposData.datos) {
+                            if (tiposData.exito && Array.isArray(tiposData.datos)) {
+                                if (tiposData.datos.length > 0) {
+                                    console.log(`    └─ Subserie "${subserie.nombre}": ${tiposData.datos.length} tipo(s)`);
+                                }
+                                
                                 const tiposConContexto = tiposData.datos.map(tipo => ({
                                     ...tipo,
                                     id_subserie: subserie.id_subserie,
@@ -326,22 +336,24 @@ async function cargarTodosLosTipos() {
                                 todosTipos = todosTipos.concat(tiposConContexto);
                             }
                         } catch (e) {
-                            console.error(`Error cargando tipos de subserie ${subserie.id_subserie}:`, e);
+                            console.error(`❌ Error cargando tipos de subserie ${subserie.id_subserie}:`, e);
                         }
                     }
                 }
             } catch (e) {
-                console.error(`Error cargando subseries de serie ${serie.id_serie}:`, e);
+                console.error(`❌ Error cargando subseries de serie ${serie.id_serie}:`, e);
             }
         }
 
+        console.log(`✅ TOTAL CARGADO: ${todosTipos.length} tipos documentales`);
+        
         // Guardar AQUÍ y una sola vez en la variable global
         todosLosTiposGlobal = todosTipos;
         
         // Mostrar tabla con todos los tipos
         mostrarTodosTipos(todosTipos);
     } catch (error) {
-        console.error('Error cargando todos los tipos:', error);
+        console.error('❌ Error cargando todos los tipos:', error);
     }
 }
 
@@ -363,6 +375,9 @@ function mostrarTodosTipos(tipos) {
             <td>
                 <button class="btn btn-small btn-primary" onclick="verArchivosDeTipo(${tipo.id_tipo}, '${tipo.nombre}')">
                     Ver ▶
+                </button>
+                <button class="btn btn-small btn-danger" onclick="eliminarTipo(${tipo.id_serie}, ${tipo.id_subserie}, ${tipo.id_tipo})">
+                    🗑️ Eliminar
                 </button>
             </td>
         </tr>
@@ -930,7 +945,7 @@ async function eliminarTipo(idSerie, idSubserie, idTipo) {
 
         if (data.exito) {
             mostrarExito('Tipo desactivado');
-            cargarTipos(idSubserie);
+            cargarTodosLosTipos(); // Recargar todos los tipos
         } else {
             mostrarError(data.error || 'Error desactivando tipo');
         }
