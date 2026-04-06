@@ -20,12 +20,22 @@ class ModeloArchivo {
   static async obtenerPorTipo(idTipo) {
     try {
       const resultado = await pool.query(
-        `SELECT * FROM archivo 
+        `SELECT id_archivo, nombre_archivo, tamaño_kb, estado, fecha_carga, ruta_pdf
+         FROM archivo 
          WHERE id_tipo = $1 AND activo = true 
          ORDER BY fecha_carga DESC`,
         [idTipo]
       );
-      return resultado.rows;
+      
+      // Transformar nombres de columnas para el frontend
+      return resultado.rows.map(row => ({
+        id_archivo: row.id_archivo,
+        nombre_original: row.nombre_archivo,
+        tamano_bytes: row.tamaño_kb * 1024, // Convertir KB a bytes
+        estado: row.estado,
+        creado_en: row.fecha_carga,
+        ruta_pdf: row.ruta_pdf
+      }));
     } catch (error) {
       logger.error(`Error al obtener archivos: ${error.message}`);
       throw error;
@@ -41,10 +51,22 @@ class ModeloArchivo {
   static async obtenerPorId(idArchivo) {
     try {
       const resultado = await pool.query(
-        'SELECT * FROM archivo WHERE id_archivo = $1 AND activo = true',
+        'SELECT id_archivo, nombre_archivo, tamaño_kb, estado, fecha_carga, ruta_pdf FROM archivo WHERE id_archivo = $1 AND activo = true',
         [idArchivo]
       );
-      return resultado.rows[0] || null;
+      
+      if (resultado.rows.length === 0) return null;
+      
+      const row = resultado.rows[0];
+      // Transformar nombres de columnas para el frontend
+      return {
+        id_archivo: row.id_archivo,
+        nombre_original: row.nombre_archivo,
+        tamano_bytes: row.tamaño_kb * 1024, // Convertir KB a bytes
+        estado: row.estado,
+        creado_en: row.fecha_carga,
+        ruta_pdf: row.ruta_pdf
+      };
     } catch (error) {
       logger.error(`Error al obtener archivo: ${error.message}`);
       throw error;

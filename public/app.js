@@ -52,6 +52,13 @@ async function cargarSeriesParaDropdowns() {
                 selectSerie.innerHTML = '<option value="">Selecciona una serie...</option>' +
                     data.datos.map(s => `<option value="${s.id_serie}">${s.codigo} - ${s.nombre}</option>`).join('');
             }
+
+            // Llenar dropdown de series en sección de Archivos
+            const selectArchivoSerie = document.getElementById('filter-archivo-serie');
+            if (selectArchivoSerie && selectArchivoSerie.children.length <= 1) {
+                selectArchivoSerie.innerHTML = '<option value="">Selecciona una serie...</option>' +
+                    data.datos.map(s => `<option value="${s.id_serie}">${s.codigo} - ${s.nombre}</option>`).join('');
+            }
         }
     } catch (error) {
         console.error('Error cargando series para dropdowns:', error);
@@ -91,6 +98,33 @@ function setupEventListeners() {
         filterTipo.addEventListener('change', (e) => {
             currentTipo = e.target.value;
             if (currentTipo) cargarArchivos(currentTipo);
+        });
+    }
+    const filterArchivoSerie = document.getElementById('filter-archivo-serie');
+    if (filterArchivoSerie) {
+        filterArchivoSerie.addEventListener('change', (e) => {
+            const idSerie = e.target.value;
+            currentSerie = idSerie;
+            if (idSerie) {
+                cargarSubseriesArchivos(idSerie);
+            } else {
+                document.getElementById('filter-archivo-subserie').innerHTML = '<option value="">Selecciona una subserie...</option>';
+                document.getElementById('filter-tipo').innerHTML = '<option value="">Selecciona un tipo...</option>';
+            }
+        });
+    }
+
+    const filterArchivoSubserie = document.getElementById('filter-archivo-subserie');
+    if (filterArchivoSubserie) {
+        filterArchivoSubserie.addEventListener('change', (e) => {
+            const idSubserie = e.target.value;
+            currentSubserie = idSubserie;
+            if (idSubserie) {
+                const idSerie = document.getElementById('filter-archivo-serie').value;
+                cargarTiposArchivos(idSerie, idSubserie);
+            } else {
+                document.getElementById('filter-tipo').innerHTML = '<option value="">Selecciona un tipo...</option>';
+            }
         });
     }
 
@@ -373,7 +407,7 @@ function mostrarTodosTipos(tipos) {
             <td>${tipo.nombre_serie}</td>
             <td><span class="badge badge-active">0</span></td>
             <td>
-                <button class="btn btn-small btn-primary" onclick="verArchivosDeTipo(${tipo.id_tipo}, '${tipo.nombre}')">
+                <button class="btn btn-small btn-primary" onclick="verArchivosDeTipo(${tipo.id_tipo}, '${tipo.nombre}', ${tipo.id_serie}, ${tipo.id_subserie}, '${tipo.nombre_serie}', '${tipo.nombre_subserie}')">
                     Ver ▶
                 </button>
                 <button class="btn btn-small btn-danger" onclick="eliminarTipo(${tipo.id_serie}, ${tipo.id_subserie}, ${tipo.id_tipo})">
@@ -402,17 +436,26 @@ function filtrarTipos(texto) {
 }
 
 // Nueva función para ver archivos de un tipo específico
-async function verArchivosDeTipo(idTipo, nombreTipo) {
+async function verArchivosDeTipo(idTipo, nombreTipo, idSerie, idSubserie, nombreSerie, nombreSubserie) {
     console.log(`Viendo archivos del tipo: ${nombreTipo} (${idTipo})`);
     
     currentTipo = idTipo;
+    currentSerie = idSerie;
+    currentSubserie = idSubserie;
     
     // Navegar a sección Archivos
     cambiarSeccion('archivos');
     
+    // Actualizar dropdowns para mostrar la selección actual
+    document.getElementById('filter-archivo-serie').value = idSerie;
+    document.getElementById('filter-archivo-subserie').innerHTML = 
+        `<option value=""><Selecciona una subserie...</option>
+         <option value="${idSubserie}" selected>${nombreSubserie}</option>`;
+    document.getElementById('filter-tipo').value = idTipo;
+    
     // Cargar los archivos del tipo
     try {
-        const response = await fetch(`${API_BASE}/tipos/${idTipo}/archivos`);
+        const response = await fetch(`${API_BASE}/series/${idSerie}/subseries/${idSubserie}/tipos/${idTipo}/archivos`);
         const data = await response.json();
         
         if (data.exito) {
@@ -956,7 +999,9 @@ async function eliminarTipo(idSerie, idSubserie, idTipo) {
 }
 
 function actualizarSelectTipos(tipos) {
-    const select = document.getElementById('archivo-tipo-parent');
+    const select = document.getElementById('filter-tipo');
+    if (!select) return;
+    
     select.innerHTML = '<option value="">Selecciona un tipo...</option>' +
         tipos.map(t => `<option value="${t.id_tipo}">${t.nombre}</option>`).join('');
 }
@@ -1059,6 +1104,41 @@ function mostrarArchivos(archivos) {
     `).join('');
 }
 
+// Cargar subseries para la sección de archivos
+async function cargarSubseriesArchivos(idSerie) {
+    try {
+        const response = await fetch(`${API_BASE}/series/${idSerie}/subseries`);
+        const data = await response.json();
+
+        if (data.exito) {
+            const select = document.getElementById('filter-archivo-subserie');
+            select.innerHTML = '<option value="">Selecciona una subserie...</option>' +
+                data.datos.map(s => `<option value="${s.id_subserie}">${s.nombre}</option>`).join('');
+            
+            // Limpiar dropdown de tipos
+            document.getElementById('filter-tipo').innerHTML = '<option value="">Selecciona un tipo...</option>';
+        }
+    } catch (error) {
+        console.error('Error cargando subseries para archivos:', error);
+    }
+}
+
+// Cargar tipos para la sección de archivos
+async function cargarTiposArchivos(idSerie, idSubserie) {
+    try {
+        const response = await fetch(`${API_BASE}/series/${idSerie}/subseries/${idSubserie}/tipos`);
+        const data = await response.json();
+
+        if (data.exito) {
+            const select = document.getElementById('filter-tipo');
+            select.innerHTML = '<option value="">Selecciona un tipo...</option>' +
+                data.datos.map(t => `<option value="${t.id_tipo}">${t.codigo ? t.codigo + ' - ' : ''}${t.nombre}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error cargando tipos para archivos:', error);
+    }
+}
+
 function mostrarNombreArchivo(file) {
     const span = document.getElementById('filename-display');
     if (file) {
@@ -1136,13 +1216,43 @@ async function eliminarArchivo(idSerie, idSubserie, idTipo, idArchivo) {
 }
 
 function abrirModalArchivoCargar() {
-    cargarTiposParaModal();
+    const tipoSeleccionado = document.getElementById('filter-tipo').value;
+    const selectModal = document.getElementById('archivo-tipo-parent');
+    
+    if (tipoSeleccionado) {
+        // Hay un tipo seleccionado en la sección de Archivos
+        // Copiar el HTML completo del dropdown para mantener todas las opciones
+        selectModal.innerHTML = document.getElementById('filter-tipo').innerHTML;
+        selectModal.value = tipoSeleccionado;
+    } else if (currentTipo) {
+        // Fallback: usar currentTipo si estaba establecido
+        selectModal.innerHTML = `<option value="${currentTipo}">Tipo Actual</option>`;
+        selectModal.value = currentTipo;
+    } else {
+        // No hay tipo seleccionado
+        mostrarError('Por favor selecciona una serie, subserie y tipo primero');
+        return;
+    }
+    
+    // Limpiar archivo previo
+    document.getElementById('archivo-file').value = '';
+    document.getElementById('filename-display').textContent = '';
+    
     document.getElementById('modal-archivo').classList.add('active');
 }
-
 async function cargarTiposParaModal() {
-    if (currentSubserie) {
-        cargarTipos(currentSubserie);
+    try {
+        const selectArchivos = document.getElementById('filter-tipo');
+        const selectModal = document.getElementById('archivo-tipo-parent');
+        
+        // Copiar las opciones del dropdown de archivos al modal
+        if (selectArchivos && selectArchivos.children.length > 1) {
+            selectModal.innerHTML = selectArchivos.innerHTML;
+        } else {
+            selectModal.innerHTML = '<option value="">No hay tipos disponibles</option>';
+        }
+    } catch (error) {
+        console.error('Error cargando tipos para el modal:', error);
     }
 }
 

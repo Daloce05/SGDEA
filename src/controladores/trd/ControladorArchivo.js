@@ -81,7 +81,7 @@ class ControladorArchivo {
   static async cargar(req, res) {
     try {
       const { idTipo } = req.params;
-      const { nombre_archivo, fecha_documento, estado, observaciones, subido_por } = req.body;
+      let { nombre_archivo, fecha_documento, estado, observaciones, subido_por } = req.body;
 
       // Validar que la solicitud tiene archivo
       if (!req.file) {
@@ -94,10 +94,9 @@ class ControladorArchivo {
         return res.status(400).json({ exito: false, error: 'Solo archivos PDF permitidos' });
       }
 
-      // Validar campos
+      // Si no se proporciona nombre_archivo, usar el nombre original del archivo
       if (!nombre_archivo) {
-        await fs.unlink(req.file.path);
-        return res.status(400).json({ exito: false, error: 'Nombre del archivo es obligatorio' });
+        nombre_archivo = req.file.originalname.replace('.pdf', '').replace(/\.[^.]*$/, '');
       }
 
       // Verificar tipo existe
@@ -160,8 +159,12 @@ class ControladorArchivo {
         return res.status(404).json({ exito: false, error: 'Archivo no encontrado' });
       }
 
-      // Verificar que el archivo existe en el sistema de archivos
-      const rutaArchivo = path.join(__dirname, '../../../', archivo.ruta_pdf);
+      // Construir la ruta del archivo - quitando la barra inicial si existe
+      const rutaRelativa = archivo.ruta_pdf.startsWith('/') 
+        ? archivo.ruta_pdf.substring(1) 
+        : archivo.ruta_pdf;
+      
+      const rutaArchivo = path.join(__dirname, '../../../', rutaRelativa);
       
       try {
         await fs.access(rutaArchivo);
@@ -170,9 +173,18 @@ class ControladorArchivo {
         return res.status(404).json({ exito: false, error: 'Archivo no disponible en servidor' });
       }
 
-      logger.info(`Archivo descargado: ${archivo.nombre_archivo}`);
+      // Asegurar que el nombre tenga extensión .pdf
+      const nombreDescarga = archivo.nombre_original.endsWith('.pdf') 
+        ? archivo.nombre_original 
+        : `${archivo.nombre_original}.pdf`;
 
-      res.download(rutaArchivo, archivo.nombre_archivo);
+      // Configurar headers para PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${nombreDescarga}"`);
+      
+      logger.info(`Archivo descargado: ${nombreDescarga}`);
+
+      res.download(rutaArchivo, nombreDescarga);
     } catch (error) {
       logger.error(`Error al descargar: ${error.message}`);
       res.status(500).json({ exito: false, error: 'Error al descargar' });
