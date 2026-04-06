@@ -64,61 +64,81 @@ class ControladorAutenticacion {
 
   /**
    * Inicia sesión de un usuario y genera un token JWT
+   * Soporta login por email o username
    * @async
    * @param {Object} req - Objeto de petición Express
-   * @param {string} req.body.email - Correo del usuario
+   * @param {string} req.body.usuario - Usuario (email o username)
    * @param {string} req.body.contraseña - Contraseña
    * @param {Object} res - Objeto de respuesta Express
    * @returns {Promise<void>}
    */
   static async iniciarSesion(req, res) {
     try {
-      const { email, contraseña } = req.body;
+      const { usuario, contraseña } = req.body;
 
-      // Obtener usuario
-      const usuario = await ModeloUsuario.obtenerPorEmail(email);
-      if (!usuario) {
+      logger.info(`Intento de login: usuario=${usuario}`);
+
+      // Buscar usuario por email o username
+      let datosUsuario = await ModeloUsuario.obtenerPorEmail(usuario);
+      
+      if (!datosUsuario) {
+        datosUsuario = await ModeloUsuario.obtenerPorUsername(usuario);
+      }
+
+      if (!datosUsuario) {
         return res.status(401).json({
-          error: 'Correo o contraseña incorrectos'
+          error: 'Usuario o contraseña incorrectos'
         });
       }
 
       // Validar contraseña
-      const contraseñaValida = await bcrypt.compare(contraseña, usuario.contraseña);
+      const contraseñaValida = await bcrypt.compare(contraseña, datosUsuario.contraseña);
       if (!contraseñaValida) {
         return res.status(401).json({
-          error: 'Correo o contraseña incorrectos'
+          error: 'Usuario o contraseña incorrectos'
+        });
+      }
+
+      // Validar que el usuario esté activo
+      if (!datosUsuario.estado) {
+        return res.status(401).json({
+          error: 'Usuario desactivado'
         });
       }
 
       // Generar token JWT
       const token = jwt.sign(
         {
-          id: usuario.id,
-          email: usuario.email,
-          rol: usuario.rol
+          id: datosUsuario.id,
+          email: datosUsuario.email,
+          username: datosUsuario.username,
+          nombre: datosUsuario.nombre,
+          rol: datosUsuario.rol
         },
         process.env.JWT_SECRETO,
         { expiresIn: process.env.EXPIRACION_TOKEN || '24h' }
       );
 
-      logger.info(`Sesión iniciada: ${email}`);
+      logger.info(`Sesión iniciada: ${datosUsuario.username || datosUsuario.email} (${datosUsuario.rol})`);
 
       res.json({
         mensaje: 'Sesión iniciada correctamente',
         token,
         usuario: {
-          id: usuario.id,
-          nombre: usuario.nombre,
-          apellido: usuario.apellido,
-          email: usuario.email,
-          rol: usuario.rol
+          id: datosUsuario.id,
+          nombre: datosUsuario.nombre,
+          apellido: datosUsuario.apellido,
+          email: datosUsuario.email,
+          username: datosUsuario.username,
+          rol: datosUsuario.rol
         }
       });
     } catch (error) {
       logger.error(`Error en inicio de sesión: ${error.message}`);
+      logger.error(`Stack trace: ${error.stack}`);
       res.status(500).json({
-        error: 'Error al iniciar sesión'
+        error: 'Error al iniciar sesión',
+        detalles: process.env.AMBIENTE === 'desarrollo' ? error.message : undefined
       });
     }
   }

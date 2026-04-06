@@ -30,6 +30,16 @@ const {
   validarIds
 } = require('../../middleware/trd/validacionJerarquica');
 
+// Middleware de autenticación y autorización
+const { verificarToken } = require('../../middleware/autenticacion');
+const {
+  verificarAdministrador,
+  verificarCargador,
+  verificarConsultor,
+  permitirModificacion,
+  permitirAdministracion
+} = require('../../middleware/autorizacion');
+
 const router = express.Router();
 
 /**
@@ -66,38 +76,44 @@ const cargarPDF = multer({
 /**
  * GET /api/trd/oficinas
  * Obtiene todas las oficinas
+ * Acceso: Cualquier usuario autenticado
  */
-router.get('/oficinas', ControladorOficina.obtenerTodas);
+router.get('/oficinas', verificarToken, verificarConsultor, ControladorOficina.obtenerTodas);
 
 /**
  * POST /api/trd/oficinas
  * Crea una nueva oficina
+ * Acceso: Solo administrador
  */
-router.post('/oficinas', ControladorOficina.crear);
+router.post('/oficinas', verificarToken, permitirAdministracion, ControladorOficina.crear);
 
 /**
  * GET /api/trd/oficinas/:idOficina
  * Obtiene una oficina con sus series
+ * Acceso: Cualquier usuario autenticado
  */
-router.get('/oficinas/:idOficina', ControladorOficina.obtenerPorId);
+router.get('/oficinas/:idOficina', verificarToken, verificarConsultor, ControladorOficina.obtenerPorId);
 
 /**
  * GET /api/trd/oficinas/:idOficina/jerarquia
  * Obtiene la jerarquía completa de una oficina
+ * Acceso: Cualquier usuario autenticado
  */
-router.get('/oficinas/:idOficina/jerarquia', ControladorOficina.obtenerJerarquia);
+router.get('/oficinas/:idOficina/jerarquia', verificarToken, verificarConsultor, ControladorOficina.obtenerJerarquia);
 
 /**
  * PUT /api/trd/oficinas/:idOficina
  * Actualiza una oficina
+ * Acceso: Solo administrador
  */
-router.put('/oficinas/:idOficina', ControladorOficina.actualizar);
+router.put('/oficinas/:idOficina', verificarToken, permitirAdministracion, ControladorOficina.actualizar);
 
 /**
  * DELETE /api/trd/oficinas/:idOficina
  * Desactiva una oficina
+ * Acceso: Solo administrador
  */
-router.delete('/oficinas/:idOficina', ControladorOficina.desactivar);
+router.delete('/oficinas/:idOficina', verificarToken, permitirAdministracion, ControladorOficina.desactivar);
 
 // ============================================
 // NIVEL 1: SERIES (Ahora bajo OFICINAS)
@@ -106,43 +122,48 @@ router.delete('/oficinas/:idOficina', ControladorOficina.desactivar);
 /**
  * GET /api/trd/oficinas/:idOficina/series
  * Obtiene todas las series de una oficina
+ * Acceso: Cualquier usuario autenticado
  */
-router.get('/oficinas/:idOficina/series', ControladorSerie.obtenerPorOficina);
+router.get('/oficinas/:idOficina/series', verificarToken, verificarConsultor, ControladorSerie.obtenerPorOficina);
 
 /**
  * POST /api/trd/oficinas/:idOficina/series
  * Crea una nueva serie en una oficina
+ * Acceso: Solo administrador
  */
-router.post('/oficinas/:idOficina/series', ControladorSerie.crear);
+router.post('/oficinas/:idOficina/series', verificarToken, permitirAdministracion, ControladorSerie.crear);
 
 /**
  * Endpoint heredado para compatibilidad
  * GET /api/trd/series
  */
-router.get('/series', ControladorSerie.obtenerTodas);
+router.get('/series', verificarToken, verificarConsultor, ControladorSerie.obtenerTodas);
 
 /**
  * POST /api/trd/series (LEGACY)
  * Crea una serie - id_oficina va en body
+ * Acceso: Solo administrador
  */
-router.post('/series', ControladorSerie.crearLegacy);
+router.post('/series', verificarToken, permitirAdministracion, ControladorSerie.crearLegacy);
 
 /**
  * GET /api/trd/series/:idSerie
  */
-router.get('/series/:idSerie', validarIds, validarSerie, ControladorSerie.obtenerPorId);
+router.get('/series/:idSerie', verificarToken, verificarConsultor, validarIds, validarSerie, ControladorSerie.obtenerPorId);
 
 /**
  * PUT /api/trd/series/:idSerie
  * Actualiza una serie
+ * Acceso: Solo administrador
  */
-router.put('/series/:idSerie', validarIds, validarSerie, ControladorSerie.actualizar);
+router.put('/series/:idSerie', verificarToken, permitirAdministracion, validarIds, validarSerie, ControladorSerie.actualizar);
 
 /**
  * DELETE /api/trd/series/:idSerie
  * Desactiva una serie
+ * Acceso: Solo administrador
  */
-router.delete('/series/:idSerie', validarIds, validarSerie, ControladorSerie.desactivar);
+router.delete('/series/:idSerie', verificarToken, permitirAdministracion, validarIds, validarSerie, ControladorSerie.desactivar);
 
 // ============================================
 // NIVEL 2: SUBSERIES
@@ -151,21 +172,25 @@ router.delete('/series/:idSerie', validarIds, validarSerie, ControladorSerie.des
 /**
  * GET /api/trd/series/:idSerie/subseries
  * Obtiene subseries de una serie
+ * Acceso: Cualquier usuario autenticado
  */
-router.get('/series/:idSerie/subseries', validarIds, validarSerie, ControladorSubserie.obtenerPorSerie);
+router.get('/series/:idSerie/subseries', verificarToken, verificarConsultor, validarIds, validarSerie, ControladorSubserie.obtenerPorSerie);
 
 /**
  * POST /api/trd/series/:idSerie/subseries
  * Crea una subserie en una serie
+ * Acceso: Solo administrador
  */
-router.post('/series/:idSerie/subseries', validarIds, validarSerie, ControladorSubserie.crear);
+router.post('/series/:idSerie/subseries', verificarToken, permitirAdministracion, validarIds, validarSerie, ControladorSubserie.crear);
 
 /**
  * GET /api/trd/series/:idSerie/subseries/:idSubserie
  * Obtiene una subserie específica
+ * Acceso: Cualquier usuario autenticado
  */
 router.get(
   '/series/:idSerie/subseries/:idSubserie',
+  verificarToken, verificarConsultor,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -175,9 +200,11 @@ router.get(
 /**
  * PUT /api/trd/series/:idSerie/subseries/:idSubserie
  * Actualiza una subserie
+ * Acceso: Solo administrador
  */
 router.put(
   '/series/:idSerie/subseries/:idSubserie',
+  verificarToken, permitirAdministracion,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -187,9 +214,11 @@ router.put(
 /**
  * DELETE /api/trd/series/:idSerie/subseries/:idSubserie
  * Desactiva una subserie
+ * Acceso: Solo administrador
  */
 router.delete(
   '/series/:idSerie/subseries/:idSubserie',
+  verificarToken, permitirAdministracion,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -203,9 +232,11 @@ router.delete(
 /**
  * GET /api/trd/series/:idSerie/subseries/:idSubserie/tipos
  * Obtiene tipos documentales de una subserie
+ * Acceso: Cualquier usuario autenticado
  */
 router.get(
   '/series/:idSerie/subseries/:idSubserie/tipos',
+  verificarToken, verificarConsultor,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -215,9 +246,11 @@ router.get(
 /**
  * POST /api/trd/series/:idSerie/subseries/:idSubserie/tipos
  * Crea un tipo documental bajo una subserie (REQUERIDO)
+ * Acceso: Solo administrador
  */
 router.post(
   '/series/:idSerie/subseries/:idSubserie/tipos',
+  verificarToken, permitirAdministracion,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -227,9 +260,11 @@ router.post(
 /**
  * GET /api/trd/series/:idSerie/subseries/:idSubserie/tipos/:idTipo
  * Obtiene un tipo documental
+ * Acceso: Cualquier usuario autenticado
  */
 router.get(
   '/series/:idSerie/subseries/:idSubserie/tipos/:idTipo',
+  verificarToken, verificarConsultor,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -239,9 +274,11 @@ router.get(
 
 /**
  * PUT /api/trd/series/:idSerie/subseries/:idSubserie/tipos/:idTipo
+ * Acceso: Solo administrador
  */
 router.put(
   '/series/:idSerie/subseries/:idSubserie/tipos/:idTipo',
+  verificarToken, permitirAdministracion,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -251,9 +288,11 @@ router.put(
 
 /**
  * DELETE /api/trd/series/:idSerie/subseries/:idSubserie/tipos/:idTipo
+ * Acceso: Solo administrador
  */
 router.delete(
   '/series/:idSerie/subseries/:idSubserie/tipos/:idTipo',
+  verificarToken, permitirAdministracion,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -268,9 +307,11 @@ router.delete(
 /**
  * GET /api/trd/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos
  * Obtiene archivos de un tipo
+ * Acceso: Cualquier usuario autenticado
  */
 router.get(
   '/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos',
+  verificarToken, verificarConsultor,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -281,9 +322,11 @@ router.get(
 /**
  * POST /api/trd/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos
  * Carga un archivo PDF
+ * Acceso: Administrador y Cargador
  */
 router.post(
   '/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos',
+  verificarToken, permitirModificacion,
   validarIds,
   validarSerie,
   validarSubserie,
@@ -295,9 +338,11 @@ router.post(
 /**
  * GET /api/trd/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos/:idArchivo
  * Obtiene información de un archivo
+ * Acceso: Cualquier usuario autenticado
  */
 router.get(
   '/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos/:idArchivo',
+  verificarToken, verificarConsultor,
   validarIds,
   validarArchivo,
   ControladorArchivo.obtenerPorId
@@ -306,9 +351,11 @@ router.get(
 /**
  * GET /api/trd/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos/:idArchivo/descargar
  * Descarga un archivo PDF
+ * Acceso: Cualquier usuario autenticado
  */
 router.get(
   '/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos/:idArchivo/descargar',
+  verificarToken, verificarConsultor,
   validarIds,
   validarArchivo,
   ControladorArchivo.descargar
@@ -317,9 +364,11 @@ router.get(
 /**
  * DELETE /api/trd/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos/:idArchivo
  * Desactiva un archivo
+ * Acceso: Administrador y Cargador
  */
 router.delete(
   '/series/:idSerie/subseries/:idSubserie/tipos/:idTipo/archivos/:idArchivo',
+  verificarToken, permitirModificacion,
   validarIds,
   validarArchivo,
   ControladorArchivo.desactivar
@@ -332,14 +381,16 @@ router.delete(
 /**
  * GET /api/trd/archivos/buscar
  * Busca archivos por criterios
+ * Acceso: Cualquier usuario autenticado
  */
-router.get('/archivos/buscar', ControladorArchivo.buscar);
+router.get('/archivos/buscar', verificarToken, verificarConsultor, ControladorArchivo.buscar);
 
 /**
  * GET /api/trd/archivos/estadisticas
  * Obtiene estadísticas generales
+ * Acceso: Cualquier usuario autenticado
  */
-router.get('/archivos/estadisticas', ControladorArchivo.estadisticas);
+router.get('/archivos/estadisticas', verificarToken, verificarConsultor, ControladorArchivo.estadisticas);
 
 // ============================================
 // MANEJO DE ERRORES

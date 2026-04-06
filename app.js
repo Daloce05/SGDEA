@@ -14,9 +14,9 @@ const logger = require('./config/logger');
 // const { probarConexion } = require('./config/baseDatos');
 
 // Importar rutas
-// const rutasUsuarios = require('./src/rutas/usuarios');
+const rutasUsuarios = require('./src/rutas/usuarios');
 // const rutasDocumentos = require('./src/rutas/documentos');
-// const rutasAutenticacion = require('./src/rutas/autenticacion');
+const rutasAutenticacion = require('./src/rutas/autenticacion');
 const rutasTRD = require('./src/rutas/trd/rutasTRD');
 
 // Prueba de conexión a PostgreSQL
@@ -88,8 +88,8 @@ app.get('/', (req, res) => {
 });
 
 // Rutas de la aplicación
-// app.use('/api/autenticacion', rutasAutenticacion);
-// app.use('/api/usuarios', rutasUsuarios);
+app.use('/api/autenticacion', rutasAutenticacion);
+app.use('/api/usuarios', rutasUsuarios);
 // app.use('/api/documentos', rutasDocumentos);
 app.use('/api/trd', rutasTRD);
 

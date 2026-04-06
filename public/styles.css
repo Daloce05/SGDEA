@@ -123,6 +123,35 @@ html, body {
     color: #DC2626;
 }
 
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-role {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.user-role.role-administrador {
+    color: #fee2e2;
+}
+
+.user-role.role-cargador {
+    color: #fef3c7;
+}
+
+.user-role.role-consultor {
+    color: #dbeafe;
+}
+
 /* ===========================
    LAYOUT PRINCIPAL
    =========================== */
@@ -367,6 +396,25 @@ textarea.form-input {
 
 .btn-danger:hover {
     background-color: #DC2626;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.btn-warning {
+    background-color: var(--warning);
+    color: var(--white);
+}
+
+.btn-warning:hover {
+    background-color: #D97706;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .btn-small {

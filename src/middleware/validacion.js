@@ -58,12 +58,13 @@ const validarRegistro = [
 
 /**
  * Reglas de validación para el inicio de sesión
+ * Acepta 'usuario' (email o username) para mayor flexibilidad
  */
 const validarInicioSesion = [
-  body('email')
+  body('usuario')
     .trim()
-    .notEmpty().withMessage('El correo es obligatorio')
-    .isEmail().withMessage('El correo debe ser válido'),
+    .notEmpty().withMessage('El usuario (email o nombre de usuario) es obligatorio')
+    .isLength({ min: 3 }).withMessage('El usuario debe tener al menos 3 caracteres'),
   body('contraseña')
     .notEmpty().withMessage('La contraseña es obligatoria'),
   procesarErroresValidacion

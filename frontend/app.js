@@ -753,8 +753,56 @@ async function guardarArchivo() {
 }
 
 function descargarArchivo(idArchivo) {
-    const url = `${API_BASE}/series/${currentSerie}/subseries/${currentSubserie}/tipos/${currentTipo}/archivos/${idArchivo}/descargar`;
-    window.location.href = url;
+    const urlInfo = `${API_BASE}/series/${currentSerie}/subseries/${currentSubserie}/tipos/${currentTipo}/archivos/${idArchivo}`;
+    const urlDescarga = `${API_BASE}/series/${currentSerie}/subseries/${currentSubserie}/tipos/${currentTipo}/archivos/${idArchivo}/descargar`;
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = '/login.html';
+        return;
+    }
+
+    // Primero obtener información del archivo
+    fetch(urlInfo, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error al obtener información del archivo');
+        return response.json();
+    })
+    .then(data => {
+        const nombreArchivo = data.datos?.nombre_original || `archivo_${idArchivo}.pdf`;
+        
+        // Luego descargar el archivo
+        return fetch(urlDescarga, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error al descargar');
+            return response.blob().then(blob => ({ blob, nombreArchivo }));
+        });
+    })
+    .then(({ blob, nombreArchivo }) => {
+        const link = document.createElement('a');
+        const urlBlob = window.URL.createObjectURL(blob);
+        link.href = urlBlob;
+        link.download = nombreArchivo;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(urlBlob);
+    })
+    .catch(error => {
+        console.error('Error al descargar:', error);
+        alert('Error al descargar el archivo');
+    });
 }
 
 async function eliminarArchivo(idSerie, idSubserie, idTipo, idArchivo) {
