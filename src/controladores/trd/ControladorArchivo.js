@@ -8,6 +8,7 @@
 const logger = require('../../../config/logger');
 const ModeloArchivo = require('../../modelos/trd/ModeloArchivo');
 const ModeloTipoDocumental = require('../../modelos/trd/ModeloTipoDocumental');
+const ModeloAuditoria = require('../../modelos/ModeloAuditoria');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -178,6 +179,27 @@ class ControladorArchivo {
         ? archivo.nombre_original 
         : `${archivo.nombre_original}.pdf`;
 
+      // Registrar descarga en auditoría
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario?.id || null,
+          usuario_nombre: req.usuario?.nombre || req.usuario?.username || 'anónimo',
+          accion: 'DESCARGAR',
+          modulo: 'trd',
+          tabla_afectada: 'archivos',
+          registro_id: idArchivo,
+          descripcion: `Descarga de archivo TRD: ${nombreDescarga}`,
+          detalles_nuevos: {
+            archivo_id: idArchivo,
+            nombre: nombreDescarga,
+            ruta: archivo.ruta_pdf
+          },
+          ip_address: req.ip
+        });
+      } catch (errorAuditoria) {
+        logger.error(`Error al registrar auditoría de descarga: ${errorAuditoria.message}`);
+      }
+
       // Configurar headers para PDF
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${nombreDescarga}"`);
@@ -200,13 +222,13 @@ class ControladorArchivo {
    */
   static async buscar(req, res) {
     try {
-      const { nombre_archivo, estado, fecha_desde, fecha_hasta } = req.query;
+      const { nombre, nombre_archivo, estado, fecha_desde, fecha_hasta, fechaInicio, fechaFin } = req.query;
 
       const archivos = await ModeloArchivo.buscar({
-        nombre_archivo,
+        termino: nombre || nombre_archivo,
         estado,
-        fecha_desde,
-        fecha_hasta
+        fecha_desde: fecha_desde || fechaInicio,
+        fecha_hasta: fecha_hasta || fechaFin
       });
 
       res.json({

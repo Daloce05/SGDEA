@@ -145,17 +145,25 @@ async function crearTablas() {
       CREATE TABLE IF NOT EXISTS auditoria (
         id SERIAL PRIMARY KEY,
         usuario_id INT,
+        usuario_nombre VARCHAR(100),
         accion VARCHAR(100) NOT NULL,
-        tabla_afectada VARCHAR(50) NOT NULL,
+        modulo VARCHAR(50) NOT NULL,
+        tabla_afectada VARCHAR(100),
         registro_id INT,
-        detalles JSONB,
+        descripcion TEXT,
+        detalles_anteriores JSONB,
+        detalles_nuevos JSONB,
+        ip_address VARCHAR(50),
         fecha_accion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        estado VARCHAR(20) DEFAULT 'completada',
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
       )
     `);
     logger.info('✓ Tabla auditoria creada');
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_auditoria_usuario_id ON auditoria(usuario_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_auditoria_fecha ON auditoria(fecha_accion)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_auditoria_accion ON auditoria(accion)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_auditoria_modulo ON auditoria(modulo)`);
 
     logger.info('========================================');
     logger.info('✓ Todas las tablas creadas correctamente');

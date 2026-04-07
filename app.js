@@ -18,6 +18,10 @@ const rutasUsuarios = require('./src/rutas/usuarios');
 // const rutasDocumentos = require('./src/rutas/documentos');
 const rutasAutenticacion = require('./src/rutas/autenticacion');
 const rutasTRD = require('./src/rutas/trd/rutasTRD');
+const rutasAdmin = require('./src/rutas/admin');
+
+// Importar middleware de autenticación
+const verificarToken = require('./src/middleware/autenticacion').verificarToken;
 
 // Prueba de conexión a PostgreSQL
 const { probarConexionPostgres } = require('./config/postgresqlTRD');
@@ -92,6 +96,9 @@ app.use('/api/autenticacion', rutasAutenticacion);
 app.use('/api/usuarios', rutasUsuarios);
 // app.use('/api/documentos', rutasDocumentos);
 app.use('/api/trd', rutasTRD);
+
+// Rutas protegidas de administración (requieren autenticación)
+app.use('/api/admin', verificarToken, rutasAdmin);
 
 /**
  * ============================================

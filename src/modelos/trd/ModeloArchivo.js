@@ -235,9 +235,10 @@ class ModeloArchivo {
       const valores = [];
       let contador = 1;
 
-      if (criterios.nombre_archivo) {
-        consulta += ` AND nombre_archivo ILIKE $${contador++}`;
-        valores.push(`%${criterios.nombre_archivo}%`);
+      if (criterios.termino) {
+        consulta += ` AND (nombre_archivo ILIKE $${contador} OR observaciones ILIKE $${contador})`;
+        valores.push(`%${criterios.termino}%`);
+        contador++;
       }
 
       if (criterios.estado) {
@@ -258,7 +259,16 @@ class ModeloArchivo {
       consulta += ' ORDER BY fecha_carga DESC LIMIT 100';
 
       const resultado = await pool.query(consulta, valores);
-      return resultado.rows;
+      
+      // Transformar nombres de columnas para el frontend
+      return resultado.rows.map(row => ({
+        id_archivo: row.id_archivo,
+        nombre_original: row.nombre_archivo,
+        tamano_bytes: (row.tamaño_kb || 0) * 1024,
+        estado: row.estado,
+        creado_en: row.fecha_carga,
+        ruta_pdf: row.ruta_pdf
+      }));
     } catch (error) {
       logger.error(`Error al buscar archivos: ${error.message}`);
       throw error;

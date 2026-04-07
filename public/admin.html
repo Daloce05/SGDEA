@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - SGDEA</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .navbar-right span {
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #ff5252;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .admin-tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 2rem;
+        }
+
+        .admin-tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .admin-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .admin-tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 2rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+
+        .btn-success {
+            background: #51cf66;
+        }
+
+        .btn-success:hover {
+            background: #40c057;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table thead {
+            background: #f8f9fa;
+        }
+
+        .table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            color: #333;
+        }
+
+        .table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-admin {
+            background: #e7cff9;
+            color: #764ba2;
+        }
+
+        .badge-cargador {
+            background: #c3fae8;
+            color: #0b7285;
+        }
+
+        .badge-consultor {
+            background: #fff3bf;
+            color: #856404;
+        }
+
+        .badge-activo {
+            background: #d3f9d8;
+            color: #2f5233;
+        }
+
+        .badge-inactivo {
+            background: #ffe0e0;
+            color: #5c2e2e;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d3f9d8;
+            color: #2f5233;
+            border: 1px solid #51cf66;
+        }
+
+        .alert-error {
+            background: #ffe0e0;
+            color: #5c2e2e;
+            border: 1px solid #ff6b6b;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #2196f3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .modal-footer {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .actions button {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: #4dabf7;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #339af0;
+        }
+
+        .btn-delete {
+            background: #ff8787;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #ff6b6b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 2rem;
+            align-items: center;
+        }
+
+        .pagination button {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <h1>⚙️ Panel de Administración</h1>
+        <div class="navbar-right">
+            <span id="usuarioNombre"></span>
+            <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="cambiarTab('usuarios')">👥 Gestión de Usuarios</button>
+            <button class="admin-tab" onclick="cambiarTab('auditoria')">📊 Auditoría</button>
+        </div>
+
+        <!-- Tab: Gestión de Usuarios -->
+        <div id="usuarios" class="tab-content active">
+            <h2>Gestión de Usuarios</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">Crear, editar, eliminar y asignar roles a usuarios</p>
+            
+            <button class="btn btn-success" onclick="abrirCrearUsuario()">+ Crear nuevo usuario</button>
+            
+            <div id="usuariosTable"></div>
+        </div>
+
+        <!-- Tab: Auditoría -->
+        <div id="auditoria" class="tab-content">
+            <h2>Registro de Auditoría</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">Visualiza todas las acciones realizadas en el sistema</p>
+            
+            <div class="filters" id="auditFilters">
+                <input type="text" id="filtroUsuario" placeholder="Filtrar por usuario" onchange="cargarAuditoria()">
+                <select id="filtroAccion" onchange="cargarAuditoria()">
+                    <option value="">- Todas las acciones -</option>
+                    <option value="CREAR">Crear</option>
+                    <option value="ACTUALIZAR">Actualizar</option>
+                    <option value="ELIMINAR">Eliminar</option>
+                    <option value="DESCARGAR">Descargar</option>
+                    <option value="BUSCAR">Buscar</option>
+                </select>
+                <input type="date" id="filtroFecha" onchange="cargarAuditoria()">
+            </div>
+
+            <div class="stats-grid" id="auditStats" style="display: none;"></div>
+            
+            <button class="btn" onclick="exportarAuditoria()">📥 Descargar CSV</button>
+            
+            <div id="auditTable"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Crear/Editar Usuario -->
+    <div id="usuarioModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="cerrarModal()">&times;</button>
+            <div class="modal-header" id="modalHeader">Crear nuevo usuario</div>
+            
+            <form id="usuarioForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre *</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apellido">Apellido *</label>
+                    <input type="text" id="apellido" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">Nombre de usuario *</label>
+                    <input type="text" id="username" required>
+                </div>
+                
+                <div class="form-group" id="passwordGroup">
+                    <label for="contraseña">Contraseña *</label>
+                    <input type="password" id="contraseña" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="rol">Rol *</label>
+                    <select id="rol" required>
+                        <option value="">- Selecciona un rol -</option>
+                        <option value="administrador">Administrador</option>
+                        <option value="cargador">Cargador</option>
+                        <option value="consultor">Consultor</option>
+                    </select>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-app.js"></script>
+</body>
+</html>

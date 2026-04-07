@@ -9,6 +9,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const logger = require('../../config/logger');
 const ModeloDocumento = require('../modelos/ModeloDocumento');
+const ModeloAuditoria = require('../modelos/ModeloAuditoria');
 
 class ControladorDocumentos {
   /**
@@ -257,6 +258,28 @@ class ControladorDocumentos {
 
       // Incrementar descargas
       await ModeloDocumento.incrementarDescargas(id);
+
+      // Registrar descarga en auditoría
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'DESCARGAR',
+          modulo: 'documentos',
+          tabla_afectada: 'documentos',
+          registro_id: id,
+          descripcion: `Descarga de documento: ${documento.titulo}`,
+          detalles_nuevos: {
+            documento_id: id,
+            titulo: documento.titulo,
+            tipo: documento.tipo_documento,
+            tamaño: documento.tamaño_archivo
+          },
+          ip_address: req.ip
+        });
+      } catch (errorAuditoria) {
+        logger.error(`Error al registrar auditoría de descarga: ${errorAuditoria.message}`);
+      }
 
       // Descargar archivo
       res.download(rutaArchivo, documento.titulo, (err) => {

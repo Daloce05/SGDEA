@@ -107,6 +107,16 @@ function configurarControlAcceso() {
 
     // Ocultar/mostrar elementos según el rol
     const rol = usuarioActual.rol;
+    
+    // Mostrar/ocultar botón del panel admin
+    const btnAdminPanel = document.getElementById('btn-admin-panel');
+    if (btnAdminPanel) {
+        if (rol === 'administrador') {
+            btnAdminPanel.style.display = 'block';
+        } else {
+            btnAdminPanel.style.display = 'none';
+        }
+    }
 
     // ADMINISTRADOR: Acceso a todo
     if (rol === 'administrador') {
@@ -309,6 +319,17 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
         notif.style.animation = 'slideOutRight 0.3s ease-in';
         setTimeout(() => notif.remove(), 300);
     }, 3000);
+}
+
+/**
+ * Redirige al panel de administración
+ */
+function irAlPanelAdmin() {
+    if (usuarioActual && usuarioActual.rol === 'administrador') {
+        window.location.href = '/admin.html';
+    } else {
+        alert('Acceso denegado. Solo administradores pueden acceder al panel de administración.');
+    }
 }
 
 console.log('✓ Sistema de autenticación y control de acceso cargado');
