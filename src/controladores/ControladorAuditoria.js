@@ -6,7 +6,6 @@
  */
 
 const ModeloAuditoria = require('../modelos/ModeloAuditoria');
-const ModeloUsuario = require('../modelos/ModeloUsuario');
 const logger = require('../../config/logger');
 
 class ControladorAuditoria {

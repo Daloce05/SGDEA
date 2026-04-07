@@ -40,7 +40,6 @@ class ModeloTipoDocumental {
       
       // Normalizar campos para compatibilidad
       return resultado.rows.map(row => {
-        console.log('📊 Raw row:', row);
         return {
           id_tipo: row.id_tipo,
           id_subserie: row.id_subserie,

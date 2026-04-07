@@ -723,6 +723,7 @@ async function eliminarSubserie(idSerie, idSubserie) {
 
 function actualizarSelectSubseries(subseries) {
     const select = document.getElementById('filter-subserie');
+    if (!select) return;
     select.innerHTML = '<option value="">Selecciona una subserie...</option>' +
         subseries.map(s => `<option value="${s.id_subserie}" data-serie-id="${s.id_serie}">${s.codigo} - ${s.nombre}</option>`).join('');
     

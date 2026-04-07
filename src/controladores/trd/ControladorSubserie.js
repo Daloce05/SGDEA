@@ -8,6 +8,7 @@
 const logger = require('../../../config/logger');
 const ModeloSubserie = require('../../modelos/trd/ModeloSubserie');
 const ModeloSerie = require('../../modelos/trd/ModeloSerie');
+const ModeloAuditoria = require('../../modelos/ModeloAuditoria');
 
 class ControladorSubserie {
   /**
@@ -110,6 +111,21 @@ class ControladorSubserie {
       logger.info(`Nueva subserie creada: ${codigo} bajo serie ${idSerie}`);
 
       const subsierieCreada = await ModeloSubserie.obtenerPorId(idSubserie);
+
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'CREAR',
+          modulo: 'trd',
+          tabla_afectada: 'subserie',
+          registro_id: idSubserie,
+          descripcion: `Creación de subserie: ${codigo} - ${nombre}`,
+          detalles_nuevos: { codigo, nombre, descripcion, id_serie: idSerie },
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+
       res.status(201).json({
         exito: true,
         datos: subsierieCreada
@@ -153,6 +169,20 @@ class ControladorSubserie {
 
       const subsierieActualizada = await ModeloSubserie.obtenerPorId(idSubserie);
 
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'ACTUALIZAR',
+          modulo: 'trd',
+          tabla_afectada: 'subserie',
+          registro_id: idSubserie,
+          descripcion: `Actualización de subserie ID: ${idSubserie}`,
+          detalles_nuevos: { nombre, descripcion },
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+
       res.json({
         exito: true,
         datos: subsierieActualizada
@@ -186,6 +216,19 @@ class ControladorSubserie {
       }
 
       logger.info(`Subserie desactivada: ${idSubserie}`);
+
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'ELIMINAR',
+          modulo: 'trd',
+          tabla_afectada: 'subserie',
+          registro_id: idSubserie,
+          descripcion: `Desactivación de subserie: ${subserie.nombre || idSubserie}`,
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
 
       res.json({ exito: true, datos: { mensaje: 'Subserie desactivada' } });
     } catch (error) {

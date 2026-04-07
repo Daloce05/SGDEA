@@ -128,6 +128,21 @@ class ControladorArchivo {
       logger.info(`Archivo cargado: ${nombre_archivo} (${resultado.id})`);
 
       const archivoCreado = await ModeloArchivo.obtenerPorId(resultado.id);
+
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'CREAR',
+          modulo: 'trd',
+          tabla_afectada: 'archivos',
+          registro_id: resultado.id,
+          descripcion: `Carga de archivo: ${nombre_archivo}`,
+          detalles_nuevos: { nombre_archivo, estado: estado || 'digital', id_tipo: idTipo },
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+
       res.status(201).json({
         exito: true,
         datos: archivoCreado
@@ -287,6 +302,19 @@ class ControladorArchivo {
       }
 
       logger.info(`Archivo desactivado: ${idArchivo}`);
+
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'ELIMINAR',
+          modulo: 'trd',
+          tabla_afectada: 'archivos',
+          registro_id: idArchivo,
+          descripcion: `Desactivación de archivo: ${archivo.nombre_original || idArchivo}`,
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
 
       res.json({ exito: true, datos: { mensaje: 'Archivo desactivado' } });
     } catch (error) {

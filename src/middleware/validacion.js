@@ -5,7 +5,7 @@
  * Utiliza express-validator para validar campos
  */
 
-const { body, query, param, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const logger = require('../../config/logger');
 
 /**
@@ -88,52 +88,7 @@ const validarActualizacionUsuario = [
     .isEmail().withMessage('El correo debe ser válido'),
   body('rol')
     .optional()
-    .isIn(['admin', 'gerente', 'usuario']).withMessage('El rol debe ser válido'),
-  procesarErroresValidacion
-];
-
-/**
- * Reglas de validación para cargar documento
- */
-const validarCargaDocumento = [
-  body('titulo')
-    .trim()
-    .notEmpty().withMessage('El título es obligatorio')
-    .isLength({ min: 3 }).withMessage('El título debe tener al menos 3 caracteres'),
-  body('tipo_documento')
-    .trim()
-    .notEmpty().withMessage('El tipo de documento es obligatorio'),
-  body('descripcion')
-    .optional()
-    .trim(),
-  procesarErroresValidacion
-];
-
-/**
- * Reglas de validación para actualizar documento
- */
-const validarActualizacionDocumento = [
-  body('titulo')
-    .optional()
-    .trim()
-    .isLength({ min: 3 }).withMessage('El título debe tener al menos 3 caracteres'),
-  body('descripcion')
-    .optional()
-    .trim(),
-  body('palabras_clave')
-    .optional()
-    .trim(),
-  procesarErroresValidacion
-];
-
-/**
- * Reglas de validación para búsqueda
- */
-const validarBusqueda = [
-  query('termino')
-    .trim()
-    .notEmpty().withMessage('El término de búsqueda es obligatorio')
-    .isLength({ min: 3 }).withMessage('El término debe tener al menos 3 caracteres'),
+    .isIn(['administrador', 'cargador', 'consultor']).withMessage('El rol debe ser válido'),
   procesarErroresValidacion
 ];
 
@@ -150,9 +105,6 @@ module.exports = {
   validarRegistro,
   validarInicioSesion,
   validarActualizacionUsuario,
-  validarCargaDocumento,
-  validarActualizacionDocumento,
-  validarBusqueda,
   validarId,
   procesarErroresValidacion
 };

@@ -237,8 +237,9 @@ class ModeloAuditoria {
     try {
       const resultado = await pool.query(
         `DELETE FROM auditoria 
-         WHERE fecha_accion < CURRENT_TIMESTAMP - INTERVAL '${diasRetener} days'
-         RETURNING id`
+         WHERE fecha_accion < CURRENT_TIMESTAMP - ($1 || ' days')::INTERVAL
+         RETURNING id`,
+        [diasRetener]
       );
 
       logger.info(`Auditoría limpiada: ${resultado.rows.length} registros eliminados`);

@@ -51,7 +51,7 @@ function verificarToken(req, res, next) {
  * @returns {void}
  */
 function verificarAdmin(req, res, next) {
-  if (!req.usuario || req.usuario.rol !== 'admin') {
+  if (!req.usuario || req.usuario.rol !== 'administrador') {
     logger.advertencia(`Acceso denegado a admin: Usuario ${req.usuario?.id}`);
     return res.status(403).json({
       error: 'Permiso insuficiente. Se requiere rol de administrador'
@@ -69,12 +69,12 @@ function verificarAdmin(req, res, next) {
  * @returns {void}
  */
 function verificarGerente(req, res, next) {
-  const roles_permitidos = ['admin', 'gerente'];
+  const roles_permitidos = ['administrador', 'cargador'];
   
   if (!req.usuario || !roles_permitidos.includes(req.usuario.rol)) {
     logger.advertencia(`Acceso denegado a gerente: Usuario ${req.usuario?.id}`);
     return res.status(403).json({
-      error: 'Permiso insuficiente. Se requiere rol de gerente o administrador'
+      error: 'Permiso insuficiente. Se requiere rol de cargador o administrador'
     });
   }
 

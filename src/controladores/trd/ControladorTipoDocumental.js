@@ -8,6 +8,7 @@
 const logger = require('../../../config/logger');
 const ModeloTipoDocumental = require('../../modelos/trd/ModeloTipoDocumental');
 const ModeloSubserie = require('../../modelos/trd/ModeloSubserie');
+const ModeloAuditoria = require('../../modelos/ModeloAuditoria');
 
 class ControladorTipoDocumental {
   /**
@@ -104,6 +105,20 @@ class ControladorTipoDocumental {
 
       logger.info(`Tipo documental creado: ${nombre} en subserie ${idSubserie}`);
 
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'CREAR',
+          modulo: 'trd',
+          tabla_afectada: 'tipo_documental',
+          registro_id: idTipo,
+          descripcion: `Creación de tipo documental: ${nombre}`,
+          detalles_nuevos: { codigo, nombre, descripcion, id_subserie: idSubserie },
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+
       res.status(201).json({
         exito: true,
         datos: { id_tipo: idTipo, nombre }
@@ -153,6 +168,20 @@ class ControladorTipoDocumental {
 
       const tipoActualizado = await ModeloTipoDocumental.obtenerPorId(idTipo);
 
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'ACTUALIZAR',
+          modulo: 'trd',
+          tabla_afectada: 'tipo_documental',
+          registro_id: idTipo,
+          descripcion: `Actualización de tipo documental ID: ${idTipo}`,
+          detalles_nuevos: { nombre, descripcion },
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+
       res.json({
         exito: true,
         datos: tipoActualizado
@@ -186,6 +215,19 @@ class ControladorTipoDocumental {
       }
 
       logger.info(`Tipo desactivado: ${idTipo}`);
+
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'ELIMINAR',
+          modulo: 'trd',
+          tabla_afectada: 'tipo_documental',
+          registro_id: idTipo,
+          descripcion: `Desactivación de tipo documental: ${tipo.nombre || idTipo}`,
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
 
       res.json({ exito: true, datos: { mensaje: 'Tipo desactivado' } });
     } catch (error) {

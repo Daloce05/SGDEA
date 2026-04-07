@@ -7,6 +7,7 @@
 
 const logger = require('../../../config/logger');
 const ModeloOficina = require('../../modelos/trd/ModeloOficina');
+const ModeloAuditoria = require('../../modelos/ModeloAuditoria');
 
 class ControladorOficina {
   /**
@@ -129,6 +130,20 @@ class ControladorOficina {
 
       logger.info(`Nueva oficina creada: ${codigo_oficina} - ${nombre_oficina}`);
 
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'CREAR',
+          modulo: 'trd',
+          tabla_afectada: 'oficina',
+          registro_id: idOficina,
+          descripcion: `Creación de oficina: ${codigo_oficina} - ${nombre_oficina}`,
+          detalles_nuevos: { codigo_oficina, nombre_oficina, dependencia },
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+
       res.status(201).json({
         exito: true,
         datos: { 
@@ -155,47 +170,6 @@ class ControladorOficina {
   }
 
   /**
-   * Desactiva una oficina
-   * @async
-   * @param {Object} req - Objeto de petición Express
-   * @param {number} req.params.idOficina - ID de la oficina
-   * @param {Object} res - Objeto de respuesta Express
-   * @returns {Promise<void>}
-   */
-  static async desactivar(req, res) {
-    try {
-      const { idOficina } = req.params;
-
-      const oficina = await ModeloOficina.obtenerPorId(idOficina);
-      if (!oficina) {
-        return res.status(404).json({ 
-          exito: false, 
-          error: 'Oficina no encontrada' 
-        });
-      }
-
-      const desactivada = await ModeloOficina.desactivar(idOficina);
-
-      if (!desactivada) {
-        return res.status(400).json({ 
-          exito: false, 
-          error: 'No se pudo desactivar' 
-        });
-      }
-
-      logger.info(`Oficina desactivada: ${idOficina}`);
-
-      res.json({ exito: true, datos: { mensaje: 'Oficina desactivada' } });
-    } catch (error) {
-      logger.error(`Error al desactivar oficina: ${error.message}`);
-      res.status(500).json({ 
-        exito: false, 
-        error: 'Error al desactivar oficina' 
-      });
-    }
-  }
-
-  /**
    * Actualiza una oficina
    * @async
    * @param {Object} req - Objeto de petición Express
@@ -215,6 +189,20 @@ class ControladorOficina {
       });
 
       logger.info(`Oficina actualizada: ID ${idOficina}`);
+
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'ACTUALIZAR',
+          modulo: 'trd',
+          tabla_afectada: 'oficina',
+          registro_id: idOficina,
+          descripcion: `Actualización de oficina ID: ${idOficina}`,
+          detalles_nuevos: { nombre_oficina, dependencia },
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
 
       res.json({
         exito: true,
@@ -252,6 +240,19 @@ class ControladorOficina {
       await ModeloOficina.desactivar(idOficina);
 
       logger.info(`Oficina desactivada: ID ${idOficina}`);
+
+      try {
+        await ModeloAuditoria.registrar({
+          usuario_id: req.usuario.id,
+          usuario_nombre: req.usuario.nombre || req.usuario.username,
+          accion: 'ELIMINAR',
+          modulo: 'trd',
+          tabla_afectada: 'oficina',
+          registro_id: idOficina,
+          descripcion: `Desactivación de oficina ID: ${idOficina}`,
+          ip_address: req.ip
+        });
+      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
 
       res.json({
         exito: true,

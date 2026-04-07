@@ -11,11 +11,9 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const logger = require('./config/logger');
-// const { probarConexion } = require('./config/baseDatos');
 
 // Importar rutas
 const rutasUsuarios = require('./src/rutas/usuarios');
-// const rutasDocumentos = require('./src/rutas/documentos');
 const rutasAutenticacion = require('./src/rutas/autenticacion');
 const rutasTRD = require('./src/rutas/trd/rutasTRD');
 const rutasAdmin = require('./src/rutas/admin');
@@ -94,7 +92,6 @@ app.get('/', (req, res) => {
 // Rutas de la aplicación
 app.use('/api/autenticacion', rutasAutenticacion);
 app.use('/api/usuarios', rutasUsuarios);
-// app.use('/api/documentos', rutasDocumentos);
 app.use('/api/trd', rutasTRD);
 
 // Rutas protegidas de administración (requieren autenticación)
