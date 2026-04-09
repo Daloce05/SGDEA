@@ -7,7 +7,7 @@
 
 const logger = require('../../config/logger');
 const ModeloUsuario = require('../modelos/ModeloUsuario');
-const ModeloAuditoria = require('../modelos/ModeloAuditoria');
+const registrarAuditoria = require('../utilidades/auditoria');
 const bcrypt = require('bcryptjs');
 
 const ROLES_PERMITIDOS = ['administrador', 'cargador', 'consultor'];
@@ -168,16 +168,13 @@ class ControladorUsuarios {
       });
 
       // Registrar en auditoría
-      await ModeloAuditoria.registrar({
-        usuario_id: req.usuario.id,
-        usuario_nombre: req.usuario.nombre,
+      await registrarAuditoria(req, {
         accion: 'CREAR',
         modulo: 'USUARIOS',
         tabla_afectada: 'usuarios',
         registro_id: usuarioId,
         descripcion: `Usuario creado: ${username} con rol ${rol}`,
-        detalles_nuevos: { nombre, apellido, email, username, rol },
-        ip_address: req.ip
+        detalles_nuevos: { nombre, apellido, email, username, rol }
       });
 
       const usuarioCreado = await ModeloUsuario.obtenerPorId(usuarioId);
@@ -247,17 +244,14 @@ class ControladorUsuarios {
       await ModeloUsuario.actualizar(id, datosActualizacion);
 
       // Registrar en auditoría
-      await ModeloAuditoria.registrar({
-        usuario_id: req.usuario.id,
-        usuario_nombre: req.usuario.nombre,
+      await registrarAuditoria(req, {
         accion: 'ACTUALIZAR',
         modulo: 'USUARIOS',
         tabla_afectada: 'usuarios',
         registro_id: id,
         descripcion: `Usuario actualizado: ${usuarioExistente.username}`,
         detalles_anteriores: usuarioExistente,
-        detalles_nuevos: datosActualizacion,
-        ip_address: req.ip
+        detalles_nuevos: datosActualizacion
       });
 
       const usuarioActualizado = await ModeloUsuario.obtenerPorId(id);
@@ -311,19 +305,16 @@ class ControladorUsuarios {
       await ModeloUsuario.desactivar(id);
 
       // Registrar en auditoría
-      await ModeloAuditoria.registrar({
-        usuario_id: req.usuario.id,
-        usuario_nombre: req.usuario.nombre,
+      await registrarAuditoria(req, {
         accion: 'DESACTIVAR',
         modulo: 'USUARIOS',
         tabla_afectada: 'usuarios',
         registro_id: id,
         descripcion: `Usuario desactivado: ${usuarioExistente.username}`,
-        detalles_anteriores: usuarioExistente,
-        ip_address: req.ip
+        detalles_anteriores: usuarioExistente
       });
 
-      logger.warn(`Usuario desactivado por ${req.usuario.nombre}: ${usuarioExistente.username}`);
+      logger.advertencia(`Usuario desactivado por ${req.usuario.nombre}: ${usuarioExistente.username}`);
 
       res.json({
         exito: true,
@@ -366,15 +357,12 @@ class ControladorUsuarios {
       await ModeloUsuario.actualizar(id, { contraseña: contraseñaHash });
 
       // Registrar en auditoría
-      await ModeloAuditoria.registrar({
-        usuario_id: req.usuario.id,
-        usuario_nombre: req.usuario.nombre,
+      await registrarAuditoria(req, {
         accion: 'RESETEAR_CONTRASEÑA',
         modulo: 'USUARIOS',
         tabla_afectada: 'usuarios',
         registro_id: id,
-        descripcion: `Contraseña reseteada para: ${usuarioExistente.username}`,
-        ip_address: req.ip
+        descripcion: `Contraseña reseteada para: ${usuarioExistente.username}`
       });
 
       logger.info(`Contraseña reseteada por ${req.usuario.nombre} para usuario ID ${id}`);

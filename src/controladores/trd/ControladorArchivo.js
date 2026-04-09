@@ -8,7 +8,7 @@
 const logger = require('../../../config/logger');
 const ModeloArchivo = require('../../modelos/trd/ModeloArchivo');
 const ModeloTipoDocumental = require('../../modelos/trd/ModeloTipoDocumental');
-const ModeloAuditoria = require('../../modelos/ModeloAuditoria');
+const registrarAuditoria = require('../../utilidades/auditoria');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -129,19 +129,14 @@ class ControladorArchivo {
 
       const archivoCreado = await ModeloArchivo.obtenerPorId(resultado.id);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'CREAR',
-          modulo: 'trd',
-          tabla_afectada: 'archivos',
-          registro_id: resultado.id,
-          descripcion: `Carga de archivo: ${nombre_archivo}`,
-          detalles_nuevos: { nombre_archivo, estado: estado || 'digital', id_tipo: idTipo },
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'CREAR',
+        modulo: 'trd',
+        tabla_afectada: 'archivos',
+        registro_id: resultado.id,
+        descripcion: `Carga de archivo: ${nombre_archivo}`,
+        detalles_nuevos: { nombre_archivo, estado: estado || 'digital', id_tipo: idTipo }
+      });
 
       res.status(201).json({
         exito: true,
@@ -195,25 +190,18 @@ class ControladorArchivo {
         : `${archivo.nombre_original}.pdf`;
 
       // Registrar descarga en auditoría
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario?.id || null,
-          usuario_nombre: req.usuario?.nombre || req.usuario?.username || 'anónimo',
-          accion: 'DESCARGAR',
-          modulo: 'trd',
-          tabla_afectada: 'archivos',
-          registro_id: idArchivo,
-          descripcion: `Descarga de archivo TRD: ${nombreDescarga}`,
-          detalles_nuevos: {
-            archivo_id: idArchivo,
-            nombre: nombreDescarga,
-            ruta: archivo.ruta_pdf
-          },
-          ip_address: req.ip
-        });
-      } catch (errorAuditoria) {
-        logger.error(`Error al registrar auditoría de descarga: ${errorAuditoria.message}`);
-      }
+      await registrarAuditoria(req, {
+        accion: 'DESCARGAR',
+        modulo: 'trd',
+        tabla_afectada: 'archivos',
+        registro_id: idArchivo,
+        descripcion: `Descarga de archivo TRD: ${nombreDescarga}`,
+        detalles_nuevos: {
+          archivo_id: idArchivo,
+          nombre: nombreDescarga,
+          ruta: archivo.ruta_pdf
+        }
+      });
 
       // Configurar headers para PDF
       res.setHeader('Content-Type', 'application/pdf');
@@ -303,18 +291,13 @@ class ControladorArchivo {
 
       logger.info(`Archivo desactivado: ${idArchivo}`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'ELIMINAR',
-          modulo: 'trd',
-          tabla_afectada: 'archivos',
-          registro_id: idArchivo,
-          descripcion: `Desactivación de archivo: ${archivo.nombre_original || idArchivo}`,
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'ELIMINAR',
+        modulo: 'trd',
+        tabla_afectada: 'archivos',
+        registro_id: idArchivo,
+        descripcion: `Desactivación de archivo: ${archivo.nombre_original || idArchivo}`
+      });
 
       res.json({ exito: true, datos: { mensaje: 'Archivo desactivado' } });
     } catch (error) {

@@ -141,7 +141,7 @@ class ControladorAuditoria {
 
       const eliminados = await ModeloAuditoria.limpiar(dias);
 
-      logger.warn(`[ADMIN] ${req.usuario.nombre} limpió auditoría: ${eliminados} registros`);
+      logger.advertencia(`[ADMIN] ${req.usuario.nombre} limpió auditoría: ${eliminados} registros`);
 
       res.json({
         exito: true,

@@ -7,7 +7,8 @@
 
 const express = require('express');
 const ControladorUsuarios = require('../controladores/ControladorUsuarios');
-const { verificarToken, verificarAdmin } = require('../middleware/autenticacion');
+const { verificarToken } = require('../middleware/autenticacion');
+const { verificarAdministrador } = require('../middleware/autorizacion');
 const { validarActualizacionUsuario, validarId } = require('../middleware/validacion');
 
 const router = express.Router();
@@ -25,7 +26,7 @@ const router = express.Router();
  *   - total (number): Cantidad de usuarios
  *   - usuarios (array): Lista de usuarios
  */
-router.get('/', verificarToken, verificarAdmin, ControladorUsuarios.obtenerTodos);
+router.get('/', verificarToken, verificarAdministrador, ControladorUsuarios.obtenerTodos);
 
 /**
  * GET /api/usuarios/perfil
@@ -50,7 +51,7 @@ router.get('/perfil', verificarToken, ControladorUsuarios.obtenerPerfil);
  *   - mensaje (string): Confirmación
  *   - usuario (object): Datos del usuario
  */
-router.get('/:id', verificarToken, verificarAdmin, validarId, ControladorUsuarios.obtenerPorId);
+router.get('/:id', verificarToken, verificarAdministrador, validarId, ControladorUsuarios.obtenerPorId);
 
 /**
  * PUT /api/usuarios/:id
@@ -70,7 +71,7 @@ router.get('/:id', verificarToken, verificarAdmin, validarId, ControladorUsuario
  *   - mensaje (string): Confirmación
  *   - usuario (object): Datos actualizados
  */
-router.put('/:id', verificarToken, verificarAdmin, validarId, validarActualizacionUsuario, ControladorUsuarios.actualizar);
+router.put('/:id', verificarToken, verificarAdministrador, validarId, validarActualizacionUsuario, ControladorUsuarios.actualizar);
 
 /**
  * DELETE /api/usuarios/:id
@@ -83,6 +84,6 @@ router.put('/:id', verificarToken, verificarAdmin, validarId, validarActualizaci
  * Response:
  *   - mensaje (string): Confirmación
  */
-router.delete('/:id', verificarToken, verificarAdmin, validarId, ControladorUsuarios.desactivar);
+router.delete('/:id', verificarToken, verificarAdministrador, validarId, ControladorUsuarios.desactivar);
 
 module.exports = router;

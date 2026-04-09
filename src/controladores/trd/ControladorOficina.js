@@ -7,7 +7,7 @@
 
 const logger = require('../../../config/logger');
 const ModeloOficina = require('../../modelos/trd/ModeloOficina');
-const ModeloAuditoria = require('../../modelos/ModeloAuditoria');
+const registrarAuditoria = require('../../utilidades/auditoria');
 
 class ControladorOficina {
   /**
@@ -130,19 +130,14 @@ class ControladorOficina {
 
       logger.info(`Nueva oficina creada: ${codigo_oficina} - ${nombre_oficina}`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'CREAR',
-          modulo: 'trd',
-          tabla_afectada: 'oficina',
-          registro_id: idOficina,
-          descripcion: `Creación de oficina: ${codigo_oficina} - ${nombre_oficina}`,
-          detalles_nuevos: { codigo_oficina, nombre_oficina, dependencia },
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'CREAR',
+        modulo: 'trd',
+        tabla_afectada: 'oficina',
+        registro_id: idOficina,
+        descripcion: `Creación de oficina: ${codigo_oficina} - ${nombre_oficina}`,
+        detalles_nuevos: { codigo_oficina, nombre_oficina, dependencia }
+      });
 
       res.status(201).json({
         exito: true,
@@ -190,19 +185,14 @@ class ControladorOficina {
 
       logger.info(`Oficina actualizada: ID ${idOficina}`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'ACTUALIZAR',
-          modulo: 'trd',
-          tabla_afectada: 'oficina',
-          registro_id: idOficina,
-          descripcion: `Actualización de oficina ID: ${idOficina}`,
-          detalles_nuevos: { nombre_oficina, dependencia },
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'ACTUALIZAR',
+        modulo: 'trd',
+        tabla_afectada: 'oficina',
+        registro_id: idOficina,
+        descripcion: `Actualización de oficina ID: ${idOficina}`,
+        detalles_nuevos: { nombre_oficina, dependencia }
+      });
 
       res.json({
         exito: true,
@@ -241,18 +231,13 @@ class ControladorOficina {
 
       logger.info(`Oficina desactivada: ID ${idOficina}`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'ELIMINAR',
-          modulo: 'trd',
-          tabla_afectada: 'oficina',
-          registro_id: idOficina,
-          descripcion: `Desactivación de oficina ID: ${idOficina}`,
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'ELIMINAR',
+        modulo: 'trd',
+        tabla_afectada: 'oficina',
+        registro_id: idOficina,
+        descripcion: `Desactivación de oficina ID: ${idOficina}`
+      });
 
       res.json({
         exito: true,

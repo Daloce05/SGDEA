@@ -6,10 +6,34 @@
  */
 
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const ControladorAutenticacion = require('../controladores/ControladorAutenticacion');
 const { validarRegistro, validarInicioSesion } = require('../middleware/validacion');
 
 const router = express.Router();
+
+/**
+ * Rate limiters para endpoints públicos de autenticación
+ */
+const limitadorLogin = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 30, // máximo 30 intentos por ventana
+  message: {
+    error: 'Demasiados intentos de inicio de sesión. Intente de nuevo en 15 minutos'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const limitadorRegistro = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 5, // máximo 5 registros por hora
+  message: {
+    error: 'Demasiados intentos de registro. Intente de nuevo más tarde'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 /**
  * POST /api/autenticacion/registro
@@ -25,7 +49,7 @@ const router = express.Router();
  *   - mensaje (string): Confirmación
  *   - usuario_id (number): ID del usuario creado
  */
-router.post('/registro', validarRegistro, ControladorAutenticacion.registrar);
+router.post('/registro', limitadorRegistro, validarRegistro, ControladorAutenticacion.registrar);
 
 /**
  * POST /api/autenticacion/login
@@ -39,7 +63,7 @@ router.post('/registro', validarRegistro, ControladorAutenticacion.registrar);
  *   - token (string): Token JWT
  *   - usuario (object): Información del usuario
  */
-router.post('/login', validarInicioSesion, ControladorAutenticacion.iniciarSesion);
+router.post('/login', limitadorLogin, validarInicioSesion, ControladorAutenticacion.iniciarSesion);
 
 /**
  * GET /api/autenticacion/validar

@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const logger = require('../../config/logger');
 const ModeloUsuario = require('../modelos/ModeloUsuario');
-const ModeloAuditoria = require('../modelos/ModeloAuditoria');
+const registrarAuditoria = require('../utilidades/auditoria');
 
 class ControladorAutenticacion {
   /**
@@ -51,19 +51,16 @@ class ControladorAutenticacion {
 
       logger.info(`Nuevo usuario registrado: ${email}`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: idUsuario,
-          usuario_nombre: nombre,
-          accion: 'CREAR',
-          modulo: 'autenticacion',
-          tabla_afectada: 'usuarios',
-          registro_id: idUsuario,
-          descripcion: `Registro de nuevo usuario: ${email}`,
-          detalles_nuevos: { nombre, apellido, email, rol: 'usuario' },
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        usuario_id: idUsuario,
+        usuario_nombre: nombre,
+        accion: 'CREAR',
+        modulo: 'autenticacion',
+        tabla_afectada: 'usuarios',
+        registro_id: idUsuario,
+        descripcion: `Registro de nuevo usuario: ${email}`,
+        detalles_nuevos: { nombre, apellido, email, rol: 'usuario' }
+      });
 
       res.status(201).json({
         mensaje: 'Usuario registrado correctamente',
@@ -136,19 +133,16 @@ class ControladorAutenticacion {
 
       logger.info(`Sesión iniciada: ${datosUsuario.username || datosUsuario.email} (${datosUsuario.rol})`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: datosUsuario.id,
-          usuario_nombre: datosUsuario.nombre,
-          accion: 'INICIAR_SESION',
-          modulo: 'autenticacion',
-          tabla_afectada: 'usuarios',
-          registro_id: datosUsuario.id,
-          descripcion: `Inicio de sesión: ${datosUsuario.username || datosUsuario.email}`,
-          detalles_nuevos: { rol: datosUsuario.rol },
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        usuario_id: datosUsuario.id,
+        usuario_nombre: datosUsuario.nombre,
+        accion: 'INICIAR_SESION',
+        modulo: 'autenticacion',
+        tabla_afectada: 'usuarios',
+        registro_id: datosUsuario.id,
+        descripcion: `Inicio de sesión: ${datosUsuario.username || datosUsuario.email}`,
+        detalles_nuevos: { rol: datosUsuario.rol }
+      });
 
       res.json({
         mensaje: 'Sesión iniciada correctamente',

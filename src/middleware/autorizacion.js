@@ -17,6 +17,7 @@ function verificarAdministrador(req, res, next) {
   if (!req.usuario || req.usuario.rol !== 'administrador') {
     logger.advertencia(`Acceso denegado a función administrador: Usuario ${req.usuario?.id}`);
     return res.status(403).json({
+      exito: false,
       error: 'Permiso insuficiente. Se requiere rol de administrador'
     });
   }

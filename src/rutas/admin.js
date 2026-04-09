@@ -8,7 +8,7 @@
 const express = require('express');
 const router = express.Router();
 
-const verificarAdministrador = require('../middleware/verificarAdministrador');
+const { verificarAdministrador } = require('../middleware/autorizacion');
 const ControladorUsuarios = require('../controladores/ControladorUsuarios');
 const ControladorAuditoria = require('../controladores/ControladorAuditoria');
 

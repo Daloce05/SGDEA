@@ -43,46 +43,6 @@ function verificarToken(req, res, next) {
   }
 }
 
-/**
- * Middleware para verificar que el usuario es administrador
- * @param {Object} req - Objeto de petición Express
- * @param {Object} res - Objeto de respuesta Express
- * @param {Function} next - Función para continuar al siguiente middleware
- * @returns {void}
- */
-function verificarAdmin(req, res, next) {
-  if (!req.usuario || req.usuario.rol !== 'administrador') {
-    logger.advertencia(`Acceso denegado a admin: Usuario ${req.usuario?.id}`);
-    return res.status(403).json({
-      error: 'Permiso insuficiente. Se requiere rol de administrador'
-    });
-  }
-
-  next();
-}
-
-/**
- * Middleware para verificar que el usuario es gerente
- * @param {Object} req - Objeto de petición Express
- * @param {Object} res - Objeto de respuesta Express
- * @param {Function} next - Función para continuar al siguiente middleware
- * @returns {void}
- */
-function verificarGerente(req, res, next) {
-  const roles_permitidos = ['administrador', 'cargador'];
-  
-  if (!req.usuario || !roles_permitidos.includes(req.usuario.rol)) {
-    logger.advertencia(`Acceso denegado a gerente: Usuario ${req.usuario?.id}`);
-    return res.status(403).json({
-      error: 'Permiso insuficiente. Se requiere rol de cargador o administrador'
-    });
-  }
-
-  next();
-}
-
 module.exports = {
-  verificarToken,
-  verificarAdmin,
-  verificarGerente
+  verificarToken
 };

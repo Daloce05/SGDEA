@@ -7,7 +7,7 @@
 
 const logger = require('../../../config/logger');
 const ModeloSerie = require('../../modelos/trd/ModeloSerie');
-const ModeloAuditoria = require('../../modelos/ModeloAuditoria');
+const registrarAuditoria = require('../../utilidades/auditoria');
 
 class ControladorSerie {
   /**
@@ -123,19 +123,14 @@ class ControladorSerie {
 
       logger.info(`Nueva serie creada: ${codigo} en oficina ${idOficina}`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'CREAR',
-          modulo: 'trd',
-          tabla_afectada: 'serie',
-          registro_id: idSerie,
-          descripcion: `Creación de serie: ${codigo} - ${nombre}`,
-          detalles_nuevos: { codigo, nombre, id_oficina: idOficina },
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'CREAR',
+        modulo: 'trd',
+        tabla_afectada: 'serie',
+        registro_id: idSerie,
+        descripcion: `Creación de serie: ${codigo} - ${nombre}`,
+        detalles_nuevos: { codigo, nombre, id_oficina: idOficina }
+      });
 
       res.status(201).json({
         exito: true,
@@ -195,19 +190,14 @@ class ControladorSerie {
 
       logger.info(`Nueva serie creada (legacy): ${codigo} en oficina ${id_oficina}`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'CREAR',
-          modulo: 'trd',
-          tabla_afectada: 'serie',
-          registro_id: idSerie,
-          descripcion: `Creación de serie: ${codigo} - ${nombre}`,
-          detalles_nuevos: { codigo, nombre, id_oficina },
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'CREAR',
+        modulo: 'trd',
+        tabla_afectada: 'serie',
+        registro_id: idSerie,
+        descripcion: `Creación de serie: ${codigo} - ${nombre}`,
+        detalles_nuevos: { codigo, nombre, id_oficina }
+      });
 
       res.status(201).json({
         exito: true,
@@ -268,20 +258,15 @@ class ControladorSerie {
 
       const serieActualizada = await ModeloSerie.obtenerPorId(idSerie);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'ACTUALIZAR',
-          modulo: 'trd',
-          tabla_afectada: 'serie',
-          registro_id: idSerie,
-          descripcion: `Actualización de serie ID: ${idSerie}`,
-          detalles_anteriores: { nombre: serie.nombre },
-          detalles_nuevos: { nombre, tiempo_gestion, tiempo_central, descripcion },
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'ACTUALIZAR',
+        modulo: 'trd',
+        tabla_afectada: 'serie',
+        registro_id: idSerie,
+        descripcion: `Actualización de serie ID: ${idSerie}`,
+        detalles_anteriores: { nombre: serie.nombre },
+        detalles_nuevos: { nombre, tiempo_gestion, tiempo_central, descripcion }
+      });
 
       res.json({
         exito: true,
@@ -318,18 +303,13 @@ class ControladorSerie {
 
       logger.info(`Serie desactivada: ${idSerie}`);
 
-      try {
-        await ModeloAuditoria.registrar({
-          usuario_id: req.usuario.id,
-          usuario_nombre: req.usuario.nombre || req.usuario.username,
-          accion: 'ELIMINAR',
-          modulo: 'trd',
-          tabla_afectada: 'serie',
-          registro_id: idSerie,
-          descripcion: `Desactivación de serie: ${serie.nombre || idSerie}`,
-          ip_address: req.ip
-        });
-      } catch (e) { logger.error(`Error auditoría: ${e.message}`); }
+      await registrarAuditoria(req, {
+        accion: 'ELIMINAR',
+        modulo: 'trd',
+        tabla_afectada: 'serie',
+        registro_id: idSerie,
+        descripcion: `Desactivación de serie: ${serie.nombre || idSerie}`
+      });
 
       res.json({ exito: true, datos: { mensaje: 'Serie desactivada' } });
     } catch (error) {
