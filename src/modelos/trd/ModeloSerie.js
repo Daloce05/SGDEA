@@ -20,6 +20,7 @@ class ModeloSerie {
       let consulta = `SELECT 
           s.id_serie,
           s.id_oficina,
+          s.id_area,
           s.codigo,
           s.nombre,
           s.descripcion,

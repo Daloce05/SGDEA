@@ -140,7 +140,7 @@ function mostrarUsuarios(usuarios) {
         html += `<tr>
             <td>
                 <div style="display:flex;align-items:center;gap:0.65rem">
-                    <div style="width:34px;height:34px;border-radius:50%;background:#e8f0fe;color:#0f3460;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0">${inicial}</div>
+                    <div style="width:34px;height:34px;border-radius:50%;background:#e8f4fa;color:#2596be;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0">${inicial}</div>
                     <div>
                         <div style="font-weight:600">${usuario.nombre} ${usuario.apellido}</div>
                         <div style="font-size:0.78rem;color:#999">@${usuario.username || '-'}</div>

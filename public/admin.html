@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - SGDEA</title>
+    <title>AquaManá - Panel Admin</title>
+    <link rel="icon" type="image/png" href="img/oso.png">
     <link rel="stylesheet" href="styles.css">
     <style>
         * {
@@ -26,7 +27,7 @@
             left: 0;
             width: 260px;
             height: 100vh;
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(180deg, #2596be 0%, #1d7a9c 50%, #187a9c 100%);
             color: white;
             display: flex;
             flex-direction: column;
@@ -90,7 +91,7 @@
         .nav-item.active {
             background: rgba(255,255,255,0.1);
             color: white;
-            border-left-color: #e94560;
+            border-left-color: #ffffff;
         }
 
         .nav-item .nav-icon {
@@ -115,7 +116,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #e94560, #c23b5e);
+            background: linear-gradient(135deg, #ffffff, #e8f4fa);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -144,9 +145,9 @@
         .btn-logout {
             width: 100%;
             padding: 0.5rem;
-            background: rgba(233, 69, 96, 0.15);
-            color: #e94560;
-            border: 1px solid rgba(233, 69, 96, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.8rem;
@@ -154,7 +155,7 @@
         }
 
         .btn-logout:hover {
-            background: rgba(233, 69, 96, 0.25);
+            background: rgba(255, 255, 255, 0.25);
         }
 
         /* ============ MAIN AREA ============ */
@@ -305,8 +306,8 @@
         .filter-input:focus,
         .filter-select:focus {
             outline: none;
-            border-color: #0f3460;
-            box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+            border-color: #2596be;
+            box-shadow: 0 0 0 3px rgba(37, 150, 190, 0.1);
         }
 
         .filter-label {
@@ -399,7 +400,7 @@
         .badge-inactivo { background: #fee2e2; color: #dc2626; }
 
         .badge-crear { background: #dcfce7; color: #16a34a; }
-        .badge-actualizar { background: #dbeafe; color: #2563eb; }
+        .badge-actualizar { background: #e8f4fa; color: #2596be; }
         .badge-eliminar { background: #fee2e2; color: #dc2626; }
         .badge-descargar { background: #f3e8ff; color: #7c3aed; }
         .badge-iniciar_sesion { background: #e0f2fe; color: #0284c7; }
@@ -425,12 +426,12 @@
         }
 
         .btn-primary {
-            background: #0f3460;
+            background: #2596be;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #1a4a8a;
+            background: #1d7a9c;
         }
 
         .btn-success {
@@ -487,12 +488,12 @@
         }
 
         .btn-icon.edit {
-            background: #dbeafe;
-            color: #2563eb;
+            background: #e8f4fa;
+            color: #2596be;
         }
 
         .btn-icon.edit:hover {
-            background: #bfdbfe;
+            background: #d0e9f2;
         }
 
         .btn-icon.delete {
@@ -603,8 +604,8 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #0f3460;
-            box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+            border-color: #2596be;
+            box-shadow: 0 0 0 3px rgba(37, 150, 190, 0.1);
         }
 
         .form-row {
@@ -689,7 +690,7 @@
             height: 28px;
             border-radius: 50%;
             background: #e8f0fe;
-            color: #0f3460;
+            color: #2596be;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -736,9 +737,9 @@
         }
 
         .pagination button:hover:not(:disabled) {
-            background: #0f3460;
+            background: #2596be;
             color: white;
-            border-color: #0f3460;
+            border-color: #2596be;
         }
 
         .pagination button:disabled {
@@ -763,7 +764,7 @@
             width: 32px;
             height: 32px;
             border: 3px solid #eee;
-            border-top-color: #0f3460;
+            border-top-color: #2596be;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin: 0 auto 0.75rem;
@@ -799,7 +800,10 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <h1>📋 SGDEA</h1>
+            <div style="text-align: center; margin-bottom: 8px;">
+                <img src="img/oso_transparente.png" alt="AquaManá Logo" style="width: 50px; height: 50px; filter: brightness(0) invert(1);">
+            </div>
+            <img src="img/aquamana_transparente.png" alt="AquaManá E.S.P" style="max-width: 100%; height: auto; filter: brightness(0) invert(1);">
             <p>Panel de Administración</p>
         </div>
 
@@ -970,6 +974,33 @@
             </form>
         </div>
     </div>
+
+    <!-- Watermark del logo en módulos -->
+    <style>
+        .main {
+            position: relative;
+        }
+        .main::before {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: calc(260px + (100% - 260px) / 2);
+            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 350px;
+            background-image: url('img/oso.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.06;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .main > .tab-content {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 
     <script src="admin-app.js"></script>
 </body>

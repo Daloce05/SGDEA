@@ -154,7 +154,7 @@ function setupEventListeners() {
 
     uploadLabel.addEventListener('dragover', (e) => {
         e.preventDefault();
-        uploadLabel.style.backgroundColor = '#3B82F6';
+        uploadLabel.style.backgroundColor = '#2596be';
         uploadLabel.style.color = 'white';
     });
 
@@ -1402,9 +1402,9 @@ function mostrarGraficoDistribucion(porEstado) {
     chart.innerHTML = `
         <div style="display: flex; gap: 16px; align-items: flex-end; height: 250px;">
             <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                <div style="height: ${alturaDigital}px; background: linear-gradient(135deg, #10B981, #059669); width: 100%; border-radius: 8px 8px 0 0;"></div>
+                <div style="height: ${alturaDigital}px; background: linear-gradient(135deg, #2596be, #1d7a9c); width: 100%; border-radius: 8px 8px 0 0;"></div>
                 <div style="margin-top: 16px; text-align: center;">
-                    <div style="font-size: 20px; font-weight: 700; color: #10B981;">${porEstado.digital || 0}</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #2596be;">${porEstado.digital || 0}</div>
                     <div style="font-size: 12px; color: #6B7280;">Digital</div>
                 </div>
             </div>
@@ -1416,9 +1416,9 @@ function mostrarGraficoDistribucion(porEstado) {
                 </div>
             </div>
             <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                <div style="height: ${alturaHibrido}px; background: linear-gradient(135deg, #3B82F6, #2563EB); width: 100%; border-radius: 8px 8px 0 0;"></div>
+                <div style="height: ${alturaHibrido}px; background: linear-gradient(135deg, #2596be, #1d7a9c); width: 100%; border-radius: 8px 8px 0 0;"></div>
                 <div style="margin-top: 16px; text-align: center;">
-                    <div style="font-size: 20px; font-weight: 700; color: #3B82F6;">${porEstado.hibrido || 0}</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #2596be;">${porEstado.hibrido || 0}</div>
                     <div style="font-size: 12px; color: #6B7280;">Híbrido</div>
                 </div>
             </div>

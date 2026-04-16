@@ -21,6 +21,7 @@ const ControladorSerie = require('../../controladores/trd/ControladorSerie');
 const ControladorSubserie = require('../../controladores/trd/ControladorSubserie');
 const ControladorTipoDocumental = require('../../controladores/trd/ControladorTipoDocumental');
 const ControladorArchivo = require('../../controladores/trd/ControladorArchivo');
+const ControladorArea = require('../../controladores/trd/ControladorArea');
 
 const {
   validarSerie,
@@ -391,6 +392,66 @@ router.get('/archivos/buscar', verificarToken, verificarConsultor, ControladorAr
  * Acceso: Cualquier usuario autenticado
  */
 router.get('/archivos/estadisticas', verificarToken, verificarConsultor, ControladorArchivo.estadisticas);
+
+// ============================================
+// ÁREAS (Dashboard por Áreas - Vista complementaria)
+// ============================================
+
+/**
+ * GET /api/trd/areas
+ * Obtiene todas las áreas
+ * Acceso: Cualquier usuario autenticado
+ */
+router.get('/areas', verificarToken, verificarConsultor, ControladorArea.obtenerTodas);
+
+/**
+ * POST /api/trd/areas
+ * Crea una nueva área
+ * Acceso: Solo administrador
+ */
+router.post('/areas', verificarToken, permitirAdministracion, ControladorArea.crear);
+
+/**
+ * GET /api/trd/areas/:idArea
+ * Obtiene un área con sus series
+ * Acceso: Cualquier usuario autenticado
+ */
+router.get('/areas/:idArea', verificarToken, verificarConsultor, ControladorArea.obtenerPorId);
+
+/**
+ * GET /api/trd/areas/:idArea/jerarquia
+ * Obtiene la jerarquía completa de un área
+ * Acceso: Cualquier usuario autenticado
+ */
+router.get('/areas/:idArea/jerarquia', verificarToken, verificarConsultor, ControladorArea.obtenerJerarquia);
+
+/**
+ * PUT /api/trd/areas/:idArea
+ * Actualiza un área
+ * Acceso: Solo administrador
+ */
+router.put('/areas/:idArea', verificarToken, permitirAdministracion, ControladorArea.actualizar);
+
+/**
+ * DELETE /api/trd/areas/:idArea
+ * Desactiva un área
+ * Acceso: Solo administrador
+ */
+router.delete('/areas/:idArea', verificarToken, permitirAdministracion, ControladorArea.desactivar);
+
+/**
+ * POST /api/trd/areas/:idArea/series/:idSerie
+ * Asocia una serie existente a un área
+ * Acceso: Solo administrador
+ */
+router.post('/areas/:idArea/series/:idSerie', verificarToken, permitirAdministracion, ControladorArea.asociarSerie);
+
+/**
+ * DELETE /api/trd/areas/:idArea/series/:idSerie
+ * Desasocia una serie de un área
+ * Acceso: Solo administrador
+ */
+router.delete('/areas/:idArea/series/:idSerie', verificarToken, permitirAdministracion, ControladorArea.desasociarSerie);
 
 // ============================================
 // MANEJO DE ERRORES

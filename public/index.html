@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGDEA - TRD Management</title>
+    <title>AquaManá - SGDEA TRD</title>
+    <link rel="icon" type="image/png" href="img/oso.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,8 +12,13 @@
     <header class="header">
         <div class="header-container">
             <div class="logo">
-                <h1>📋 SGDEA TRD</h1>
-                <p>Sistema de Gestión Documental - Tabla de Retención</p>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="img/oso_transparente.png" alt="AquaManá Logo" style="width: 45px; height: 45px; filter: brightness(0) invert(1);">
+                    <div>
+                        <img src="img/aquamana_transparente.png" alt="AquaManá E.S.P" style="height: 32px; width: auto; filter: brightness(0) invert(1);">
+                        <p>Sistema de Gestión Documental - Tabla de Retención</p>
+                    </div>
+                </div>
             </div>
             <div class="header-status">
                 <div class="user-info">
@@ -31,6 +37,9 @@
         <nav class="sidebar">
             <div class="nav-section">
                 <h3>📁 Módulos</h3>
+                <button class="nav-btn" data-section="areas">
+                    🗂️ Áreas
+                </button>
                 <button class="nav-btn" data-section="oficinas">
                     🏢 Oficinas
                 </button>
@@ -74,6 +83,43 @@
 
         <!-- CONTENT AREA -->
         <main class="content">
+            <!-- ÁREAS SECTION (Dashboard por Áreas) -->
+            <section id="areas-section" class="section">
+                <!-- VISTA 1: Grid de todas las áreas -->
+                <div id="areas-vista-grid">
+                    <div class="section-header">
+                        <h2>🗂️ Dashboard por Áreas</h2>
+                        <button class="btn btn-primary btn-crear-area" id="btn-crear-area" onclick="abrirModalArea()">+ Nueva Área</button>
+                    </div>
+
+                    <div class="search-bar">
+                        <input type="text" id="buscar-areas" placeholder="Buscar área...">
+                    </div>
+
+                    <div id="areas-grid" class="areas-grid">
+                        <p class="loading">Cargando áreas...</p>
+                    </div>
+                </div>
+
+                <!-- VISTA 2: Detalle de un área (reemplaza completamente la vista grid) -->
+                <div id="areas-vista-detalle" style="display:none;">
+                    <!-- Cabecera del área -->
+                    <div class="area-detalle-topbar">
+                        <button class="btn btn-secondary" onclick="volverAreas()">← Volver a Áreas</button>
+                        <button class="btn btn-primary btn-asociar-serie" id="btn-asociar-serie" onclick="abrirModalAsociarSerie()">+ Asociar Serie</button>
+                    </div>
+
+                    <!-- Info card del área -->
+                    <div id="area-info-card" class="area-info-card"></div>
+
+                    <!-- Breadcrumb de navegación interna -->
+                    <div id="area-breadcrumb" class="area-breadcrumb" style="display:none;"></div>
+
+                    <!-- Contenido principal: series o detalle expandido -->
+                    <div id="area-contenido-principal"></div>
+                </div>
+            </section>
+
             <!-- OFICINAS SECTION -->
             <section id="oficinas-section" class="section">
                 <div class="section-header">
@@ -513,11 +559,108 @@
         </div>
     </div>
 
+    <!-- Modal Nueva Área -->
+    <div id="modal-area" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nueva Área</h3>
+                <button class="close-btn" onclick="cerrarModal('modal-area')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Dependencia Productora *</label>
+                    <input type="text" id="area-dependencia" class="form-input" placeholder="Ej: Dirección General, Gerencia Financiera">
+                </div>
+                <div class="form-group">
+                    <label>Oficina Productora *</label>
+                    <input type="text" id="area-oficina-productora" class="form-input" placeholder="Ej: Oficina de Archivo, Oficina Jurídica">
+                </div>
+                <div class="form-group">
+                    <label>Código Oficina *</label>
+                    <input type="text" id="area-codigo-oficina" class="form-input" placeholder="Ej: 100, 200, 300">
+                </div>
+                <div class="form-group">
+                    <label>Código Área *</label>
+                    <input type="text" id="area-codigo" class="form-input" placeholder="Ej: ADM, FIN, TEC">
+                </div>
+                <div class="form-group">
+                    <label>Nombre del Área *</label>
+                    <input type="text" id="area-nombre" class="form-input" placeholder="Ej: Área Administrativa">
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="area-descripcion" class="form-input" rows="3" placeholder="Describe el área..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modal-area')">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarArea()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Asociar Serie a Área -->
+    <div id="modal-asociar-serie" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Asociar Serie al Área</h3>
+                <button class="close-btn" onclick="cerrarModal('modal-asociar-serie')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Buscar serie</label>
+                    <input type="text" id="asociar-serie-buscar" class="form-input" placeholder="Buscar por código o nombre..." oninput="filtrarSeriesAsociar(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Serie disponible *</label>
+                    <select id="asociar-serie-select" class="form-input" size="8" style="height:auto;">
+                        <option value="">Cargando series...</option>
+                    </select>
+                </div>
+                <p id="asociar-serie-count" style="font-size:12px; color: var(--gray-500); margin-top:8px;">
+                    Solo se muestran series que no están asignadas a otra área.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modal-asociar-serie')">Cancelar</button>
+                <button class="btn btn-primary" onclick="asociarSerieAlArea()">Asociar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications -->
     <div id="toast" class="toast"></div>
+
+    <!-- Watermark del logo en módulos -->
+    <style>
+        .content {
+            position: relative;
+        }
+        .content::before {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: calc(240px + (100% - 240px) / 2);
+            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 350px;
+            background-image: url('img/oso.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.06;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .content > * {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 
     <!-- Scripts -->
     <script src="auth.js"></script>
     <script src="app.js"></script>
+    <script src="areas-app.js"></script>
 </body>
 </html>
