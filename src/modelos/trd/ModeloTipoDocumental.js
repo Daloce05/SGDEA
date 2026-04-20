@@ -22,18 +22,22 @@ class ModeloTipoDocumental {
       let resultado;
       try {
         resultado = await pool.query(
-          `SELECT * FROM tipo_documental 
-           WHERE id_subserie = $1 AND activo = true 
-           ORDER BY nombre ASC`,
+          `SELECT td.*, 
+             (SELECT COUNT(*) FROM archivo a WHERE a.id_tipo = td.id_tipo AND a.activo = true) AS total_archivos
+           FROM tipo_documental td
+           WHERE td.id_subserie = $1 AND td.activo = true 
+           ORDER BY td.nombre ASC`,
           [idSubserie]
         );
       } catch (schemaError) {
         // Si falla, intenta con el esquema antiguo
         logger.info('Intentando con esquema antiguo...');
         resultado = await pool.query(
-          `SELECT * FROM tipo_documental 
-           WHERE id_subserie = $1 AND activa = true 
-           ORDER BY nombre_tipo ASC`,
+          `SELECT td.*, 
+             (SELECT COUNT(*) FROM archivo a WHERE a.id_tipo = td.id_tipo AND a.activo = true) AS total_archivos
+           FROM tipo_documental td
+           WHERE td.id_subserie = $1 AND td.activa = true 
+           ORDER BY td.nombre_tipo ASC`,
           [idSubserie]
         );
       }
@@ -46,7 +50,8 @@ class ModeloTipoDocumental {
           codigo: row.codigo,
           nombre: row.nombre,
           descripcion: row.descripcion,
-          activo: row.activo !== undefined ? row.activo : row.activa
+          activo: row.activo !== undefined ? row.activo : row.activa,
+          total_archivos: parseInt(row.total_archivos) || 0
         };
       });
     } catch (error) {
@@ -133,7 +138,7 @@ class ModeloTipoDocumental {
    */
   static async crear(idSubserie, datosTipo) {
     try {
-      const { codigo, nombre, descripcion } = datosTipo;
+      const { nombre, descripcion } = datosTipo;
 
       // Validar que subserie es obligatoria
       if (!idSubserie || !nombre) {
@@ -152,13 +157,13 @@ class ModeloTipoDocumental {
 
       const resultado = await pool.query(
         `INSERT INTO tipo_documental 
-         (id_subserie, codigo, nombre, descripcion)
-         VALUES ($1, $2, $3, $4)
+         (id_subserie, nombre, descripcion)
+         VALUES ($1, $2, $3)
          RETURNING id_tipo`,
-        [idSubserie, codigo || null, nombre, descripcion || '']
+        [idSubserie, nombre, descripcion || '']
       );
 
-      logger.info(`Tipo documental creado: ${nombre} (${codigo}) bajo subserie ${idSubserie}`);
+      logger.info(`Tipo documental creado: ${nombre} bajo subserie ${idSubserie}`);
       return resultado.rows[0].id_tipo;
     } catch (error) {
       logger.error(`Error al crear tipo documental: ${error.message}`);

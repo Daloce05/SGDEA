@@ -79,7 +79,7 @@ class ControladorTipoDocumental {
   static async crear(req, res) {
     try {
       const { idSubserie } = req.params;
-      const { codigo, nombre, descripcion } = req.body;
+      const { nombre, descripcion } = req.body;
 
       if (!idSubserie || !nombre) {
         return res.status(400).json({ 
@@ -98,7 +98,6 @@ class ControladorTipoDocumental {
       }
 
       const idTipo = await ModeloTipoDocumental.crear(idSubserie, {
-        codigo,
         nombre,
         descripcion
       });
@@ -111,7 +110,7 @@ class ControladorTipoDocumental {
         tabla_afectada: 'tipo_documental',
         registro_id: idTipo,
         descripcion: `Creación de tipo documental: ${nombre}`,
-        detalles_nuevos: { codigo, nombre, descripcion, id_subserie: idSubserie }
+        detalles_nuevos: { nombre, descripcion, id_subserie: idSubserie }
       });
 
       res.status(201).json({

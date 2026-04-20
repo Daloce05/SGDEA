@@ -405,7 +405,7 @@ function mostrarTodosTipos(tipos) {
             <td>${tipo.nombre}</td>
             <td>${tipo.nombre_subserie}</td>
             <td>${tipo.nombre_serie}</td>
-            <td><span class="badge badge-active">0</span></td>
+            <td><span class="badge badge-active">${tipo.total_archivos || 0}</span></td>
             <td>
                 <button class="btn btn-small btn-primary" onclick="verArchivosDeTipo(${tipo.id_tipo}, '${tipo.nombre}', ${tipo.id_serie}, ${tipo.id_subserie}, '${tipo.nombre_serie}', '${tipo.nombre_subserie}')">
                     Ver ▶
@@ -919,7 +919,7 @@ function mostrarTipos(tipos) {
             <td>${tipo.descripcion || '-'}</td>
             <td>${tipo.id_subserie ? 'Subserie' : 'Serie'}</td>
             <td>
-                <span class="badge badge-active">0</span>
+                <span class="badge badge-active">${tipo.total_archivos || 0}</span>
             </td>
             <td>
                 <button class="btn btn-small btn-danger" onclick="eliminarTipo(${currentSerie}, ${currentSubserie}, ${tipo.id_tipo})">
@@ -933,11 +933,10 @@ function mostrarTipos(tipos) {
 async function guardarTipo() {
     const idSerie = document.getElementById('tipo-serie-parent').value;
     const idSubserie = document.getElementById('tipo-subserie-parent').value;
-    const codigo = document.getElementById('tipo-codigo').value;
     const nombre = document.getElementById('tipo-nombre').value;
     const descripcion = document.getElementById('tipo-descripcion').value;
 
-    if (!idSerie || !idSubserie || !codigo || !nombre) {
+    if (!idSerie || !idSubserie || !nombre) {
         mostrarError('Completa los campos requeridos');
         return;
     }
@@ -947,7 +946,6 @@ async function guardarTipo() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                codigo,
                 nombre,
                 descripcion
             })
