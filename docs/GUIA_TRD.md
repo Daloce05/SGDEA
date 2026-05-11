@@ -38,15 +38,6 @@ npm install
 choco install postgresql
 ```
 
-**macOS:**
-```bash
-brew install postgresql
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt-get install postgresql postgresql-contrib
-```
 
 ### 3. Crear Base de Datos
 
